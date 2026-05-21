@@ -216,7 +216,7 @@
   <div class="hero">
     <h1>SI   TUGAS</h1>
     <p>Pantau tugasmu, tuntaskan tepat waktu</p>
-    <button class="btn-about" onclick="window.location.href='#about'">About</button>
+    
   </div>
 
 </body>

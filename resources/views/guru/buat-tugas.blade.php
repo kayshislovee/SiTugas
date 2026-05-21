@@ -411,9 +411,7 @@
   <!-- ══ MAIN ══ -->
   <div class="main">
 
-    <header class="topbar">
-      <a href="/guru/buat-tugas" class="btn-buat" style="text-decoration:none;">Buat Tugas</a>
-    </header>
+    
 
     <div class="content">
       <div class="form-card">

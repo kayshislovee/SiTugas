@@ -678,7 +678,7 @@ tbody td {
   flex-direction: column;
   gap: 12px;
   box-shadow: var(--shadow-md);
-  height: 100%;
+  height: 20%;
 }
 
 .notif-tag {
@@ -703,7 +703,7 @@ tbody td {
   text-decoration: none;
   font-size: 12px;
   font-weight: 700;
-  padding: 8px 16px;
+  padding: 8px 8px;
   border-radius: 6px;
   width: fit-content;
   transition: background-color .2s;
@@ -995,42 +995,7 @@ tbody td {
     </section>
 
     <!-- BOTTOM ROW: Aktivitas Kelas + Notifikasi -->
-    <div class="bottom-row">
-
-      <!-- Aktivitas Kelas -->
-      <section class="card chart-card">
-        <div class="card-header">
-          <h3 class="card-title">Aktivitas Kelas</h3>
-        </div>
-        <div class="chart-area">
-          <div class="bar-chart">
-            <div class="bar-group">
-              <div class="bar" style="height: 40px;"></div>
-            </div>
-            <div class="bar-group">
-              <div class="bar" style="height: 80px;"></div>
-            </div>
-            <div class="bar-group">
-              <div class="bar" style="height: 60px;"></div>
-            </div>
-            <div class="bar-group">
-              <div class="bar bar-dark" style="height: 120px;"></div>
-            </div>
-            <div class="bar-group">
-              <div class="bar" style="height: 50px;"></div>
-            </div>
-            <div class="bar-group">
-              <div class="bar" style="height: 90px;"></div>
-            </div>
-            <div class="bar-group">
-              <div class="bar" style="height: 70px;"></div>
-            </div>
-            <div class="bar-group">
-              <div class="bar" style="height: 55px;"></div>
-            </div>
-          </div>
-        </div>
-      </section>
+    
 
       <!-- Notifikasi -->
       <section class="notif-card">
