@@ -1,51 +1,72 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 
-// ===== Halaman Utama =====
+// ───────────────────────────────────────────────
+// Halaman Utama
+// ───────────────────────────────────────────────
 Route::get('/', function () {
     return view('welcome');
 });
 
-// ===== Autentikasi =====
-Route::get('/login', function () {
-    return view('autentication.login');
-})->name('login');
+// ───────────────────────────────────────────────
+// Autentikasi — Guest Only (sudah login redirect)
+// ───────────────────────────────────────────────
+Route::middleware('guest')->group(function () {
 
-Route::get('/login-guru', function () {
-    return view('autentication.login-guru');
-})->name('login.guru');
+    // Login Siswa
+    Route::get('/login', [AuthController::class, 'showLoginSiswa'])->name('login');
+    Route::post('/login', [AuthController::class, 'loginSiswa'])->name('login.post');
 
-// ===== Halaman Guru =====
-Route::get('/guru/dashboard', function () {
-    return view('guru.dashboard');
-})->name('guru.dashboard');
+    // Login Guru
+    Route::get('/login-guru', [AuthController::class, 'showLoginGuru'])->name('login.guru');
+    Route::post('/login-guru', [AuthController::class, 'loginGuru'])->name('login.guru.post');
+});
 
-Route::get('/guru/kelola-tugas', function () {
-    return view('guru.kelola-tugas');
-})->name('guru.kelola-tugas');
+// Logout
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-Route::get('/guru/buat-tugas', function () {
-    return view('guru.buat-tugas');
-})->name('guru.buat-tugas');
+// ───────────────────────────────────────────────
+// Halaman Guru (harus login & role = guru)
+// ───────────────────────────────────────────────
+Route::middleware(['role:guru'])->prefix('guru')->name('guru.')->group(function () {
 
-Route::get('/guru/edit-tugas', function () {
-    return view('guru.edit-tugas');
-})->name('guru.edit-tugas');
+    Route::get('/dashboard', function () {
+        return view('guru.dashboard');
+    })->name('dashboard');
 
-Route::get('/guru/notifikasi', function () {
-    return view('guru.notifikasi');
-})->name('guru.notifikasi');
+    Route::get('/kelola-tugas', function () {
+        return view('guru.kelola-tugas');
+    })->name('kelola-tugas');
 
-// ===== Halaman Siswa =====
-Route::get('/siswa/dashboard', function () {
-    return view('siswa.dashboard');
-})->name('siswa.dashboard');
+    Route::get('/buat-tugas', function () {
+        return view('guru.buat-tugas');
+    })->name('buat-tugas');
 
-Route::get('/siswa/tugas', function () {
-    return view('siswa.tugas');
-})->name('siswa.tugas');
+    Route::get('/edit-tugas', function () {
+        return view('guru.edit-tugas');
+    })->name('edit-tugas');
 
-Route::get('/siswa/notifikasi', function () {
-    return view('siswa.notifikasi-siswa');
-})->name('siswa.notifikasi');
+    Route::get('/notifikasi', function () {
+        return view('guru.notifikasi');
+    })->name('notifikasi');
+});
+
+// ───────────────────────────────────────────────
+// Halaman Siswa (harus login & role = siswa)
+// ───────────────────────────────────────────────
+Route::middleware(['role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
+
+    Route::get('/dashboard', function () {
+        return view('siswa.dashboard');
+    })->name('dashboard');
+
+    Route::get('/tugas', function () {
+        return view('siswa.tugas');
+    })->name('tugas');
+
+    Route::get('/notifikasi', function () {
+        return view('siswa.notifikasi-siswa');
+    })->name('notifikasi');
+});

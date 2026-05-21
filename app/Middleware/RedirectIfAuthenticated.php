@@ -21,15 +21,7 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                $user = Auth::guard($guard)->user();
-                // Redirect ke dashboard sesuai role
-                if ($user->role === 'guru') {
-                    return redirect()->route('guru.dashboard');
-                } elseif ($user->role === 'siswa') {
-                    return redirect()->route('siswa.dashboard');
-                }
-                // Fallback ke home jika role tidak dikenali
-                return redirect('/');
+                return redirect(RouteServiceProvider::HOME);
             }
         }
 
