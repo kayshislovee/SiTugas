@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\TugasController;
+use App\Http\Controllers\NotifikasiController;
 
 // ───────────────────────────────────────────────
 // Halaman Utama
@@ -30,23 +32,23 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 // ───────────────────────────────────────────────
 // Halaman Guru (harus login & role = guru)
 // ───────────────────────────────────────────────
-Route::middleware(['role:guru'])->prefix('guru')->name('guru.')->group(function () {
+Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
 
-    Route::get('/dashboard', function () {
-        return view('guru.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [TugasController::class, 'dashboardGuru'])->name('dashboard');
 
-    Route::get('/kelola-tugas', function () {
-        return view('guru.kelola-tugas');
-    })->name('kelola-tugas');
+    // CRUD Tugas Guru (Mengarah ke TugasController agar logika simpan database & kirim notif berjalan)
+    Route::get('/kelola-tugas', [TugasController::class, 'indexGuru'])->name('kelola-tugas');
+    Route::get('/kelola-tugas/{tugas}', [TugasController::class, 'show'])->name('show-tugas');
+    Route::get('/kelola-tugas/{tugas}/edit', [TugasController::class, 'edit'])->name('edit-tugas');
+    Route::post('/kelola-tugas', [TugasController::class, 'store'])->name('store-tugas');
+    Route::put('/kelola-tugas/{tugas}', [TugasController::class, 'update'])->name('update-tugas');
+    Route::delete('/kelola-tugas/{tugas}', [TugasController::class, 'destroy'])->name('destroy-tugas');
+    Route::post('/toggle-status/{pengumpulan}', [TugasController::class, 'toggleStatus'])->name('toggle-status');
 
+    // Halaman static pelengkap guru
     Route::get('/buat-tugas', function () {
         return view('guru.buat-tugas');
     })->name('buat-tugas');
-
-    Route::get('/edit-tugas', function () {
-        return view('guru.edit-tugas');
-    })->name('edit-tugas');
 
     Route::get('/notifikasi', function () {
         return view('guru.notifikasi');
@@ -56,17 +58,19 @@ Route::middleware(['role:guru'])->prefix('guru')->name('guru.')->group(function 
 // ───────────────────────────────────────────────
 // Halaman Siswa (harus login & role = siswa)
 // ───────────────────────────────────────────────
-Route::middleware(['role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
+Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
 
-    Route::get('/dashboard', function () {
-        return view('siswa.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [TugasController::class, 'dashboardSiswa'])->name('dashboard');
 
     Route::get('/tugas', function () {
         return view('siswa.tugas');
     })->name('tugas');
 
-    Route::get('/notifikasi', function () {
-        return view('siswa.notifikasi-siswa');
-    })->name('notifikasi');
+    // --- PERUBAHAN FITUR NOTIFIKASI DINAMIS SISWA ---
+    // Membuka halaman list notifikasi dari database
+    Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi');
+    
+    // Aksi tombol untuk membaca satu atau semua notifikasi milik siswa
+    Route::post('/notifikasi/{id}/read', [NotifikasiController::class, 'markAsRead'])->name('notifikasi.read');
+    Route::post('/notifikasi/read-all', [NotifikasiController::class, 'markAllAsRead'])->name('notifikasi.readAll');
 });

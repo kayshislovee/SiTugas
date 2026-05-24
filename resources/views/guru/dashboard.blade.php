@@ -807,18 +807,21 @@ tbody td {
       <div class="user-profile">
         <div class="user-avatar">👨‍🏫</div>
         <div class="user-info">
-          <p class="user-name">Budi Santoso, S.P</p>
+          <p class="user-name">{{ auth()->user()->name }}</p>
           <p class="user-role">Guru</p>
         </div>
       </div>
-      <a href="/login-guru" class="logout-btn">
-        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; stroke: currentColor; fill: none;">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-          <polyline points="16 17 21 12 16 7"/>
-          <line x1="21" y1="12" x2="9" y2="12"/>
-        </svg>
-        Keluar
-      </a>
+      <form action="{{ route('logout') }}" method="POST" style="width: 100%;">
+        @csrf
+        <button type="submit" class="logout-btn" style="width: 100%; border: none; background: none; cursor: pointer; padding: 10px 16px;">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; stroke: currentColor; fill: none;">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Keluar
+        </button>
+      </form>
     </div>
   </aside>
 

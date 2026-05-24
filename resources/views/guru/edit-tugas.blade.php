@@ -346,7 +346,7 @@
       </div>
 
       <div class="topbar-right">
-        <button class="btn-hapus" onclick="confirm('Yakin ingin menghapus tugas ini?')">
+        <button class="btn-hapus" onclick="if(confirm('Yakin ingin menghapus tugas ini?')) { document.getElementById('deleteForm').submit(); }">
           <svg viewBox="0 0 24 24">
             <polyline points="3 6 5 6 21 6"/>
             <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -357,6 +357,12 @@
         </button>
       </div>
     </header>
+
+    <!-- Hidden form untuk delete -->
+    <form id="deleteForm" method="POST" action="{{ route('guru.destroy-tugas', $tugas->id) }}" style="display: none;">
+      @csrf
+      @method('DELETE')
+    </form>
 
     <div class="content">
       <div class="form-card">
@@ -375,62 +381,67 @@
 
           <hr class="form-divider"/>
 
-          <div class="field">
-            <label>Judul Tugas</label>
-            <input type="text" name="judul" value="" placeholder="Masukkan judul tugas..."/>
-          </div>
+          <form method="POST" action="{{ route('guru.update-tugas', $tugas->id) }}">
+            @csrf
+            @method('PUT')
 
-          <div class="field">
-            <label>Deskripsi Tugas</label>
-            <textarea name="deskripsi" placeholder="Masukkan deskripsi tugas..."></textarea>
-          </div>
-
-          <div class="row-2">
             <div class="field">
-              <label>Mata Pelajaran</label>
-              <div class="select-wrap">
-                <select name="mapel">
-                  <option value="" disabled>Pilih Mapel</option>
-                  <option selected>Matematika</option>
-                  <option>Bahasa Indonesia</option>
-                  <option>Matematika</option>
-                  <option>PKN</option>
-                  <option>Sejarah</option>
-                  <option>Bahasa Inggris</option>
-                  <option>Agama</option>
-                </select>
+              <label>Judul Tugas</label>
+              <input type="text" name="judul" value="{{ $tugas->judul }}" placeholder="Masukkan judul tugas..." required/>
+            </div>
+
+            <div class="field">
+              <label>Deskripsi Tugas</label>
+              <textarea name="deskripsi" placeholder="Masukkan deskripsi tugas...">{{ $tugas->deskripsi }}</textarea>
+            </div>
+
+            <div class="row-2">
+              <div class="field">
+                <label>Mata Pelajaran</label>
+                <div class="select-wrap">
+                  <select name="mapel" required>
+                    <option value="" disabled>Pilih Mapel</option>
+                    <option value="Matematika" {{ $tugas->mapel === 'Matematika' ? 'selected' : '' }}>Matematika</option>
+                    <option value="Bahasa Indonesia" {{ $tugas->mapel === 'Bahasa Indonesia' ? 'selected' : '' }}>Bahasa Indonesia</option>
+                    <option value="Fisika" {{ $tugas->mapel === 'Fisika' ? 'selected' : '' }}>Fisika</option>
+                    <option value="Kimia" {{ $tugas->mapel === 'Kimia' ? 'selected' : '' }}>Kimia</option>
+                    <option value="Biologi" {{ $tugas->mapel === 'Biologi' ? 'selected' : '' }}>Biologi</option>
+                    <option value="Bahasa Inggris" {{ $tugas->mapel === 'Bahasa Inggris' ? 'selected' : '' }}>Bahasa Inggris</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label>Kelas</label>
+                <div class="select-wrap">
+                  <select name="kelas" required>
+                    <option value="" disabled>Pilih Kelas</option>
+                    <option value="X-A" {{ $tugas->kelas === 'X-A' ? 'selected' : '' }}>X-A</option>
+                    <option value="X-B" {{ $tugas->kelas === 'X-B' ? 'selected' : '' }}>X-B</option>
+                    <option value="XI-A" {{ $tugas->kelas === 'XI-A' ? 'selected' : '' }}>XI-A</option>
+                    <option value="XI-B" {{ $tugas->kelas === 'XI-B' ? 'selected' : '' }}>XI-B</option>
+                    <option value="XII-A" {{ $tugas->kelas === 'XII-A' ? 'selected' : '' }}>XII-A</option>
+                    <option value="XII-B" {{ $tugas->kelas === 'XII-B' ? 'selected' : '' }}>XII-B</option>
+                  </select>
+                </div>
               </div>
             </div>
-            <div class="field">
-              <label>Kelas</label>
-              <div class="select-wrap">
-                <select name="kelas">
-                  <option value="" disabled>Pilih Kelas</option>
-                  <option>XI RPL 1</option>
-                  <option>XI RPL 2</option>
-                </select>
+
+            <div class="row-2">
+              <div class="field">
+                <label>Tanggal Pemberian</label>
+                <input type="date" name="tgl_pemberian" value="{{ $tugas->tgl_pemberian->format('Y-m-d') }}" required/>
+              </div>
+              <div class="field">
+                <label>Tanggal Pengumpulan</label>
+                <input type="date" name="tgl_pengumpulan" value="{{ $tugas->tgl_pengumpulan->format('Y-m-d') }}" required/>
               </div>
             </div>
-          </div>
 
-          <div class="row-2">
-            <div class="field">
-              <label>Tanggal Pemberian</label>
-              <input type="date" name="tgl_pemberian" value="2026-05-10"/>
+            <div class="form-actions">
+              <button type="button" class="btn-batal" onclick="history.back()">Batal</button>
+              <button type="submit" class="btn-simpan">Simpan Perubahan</button>
             </div>
-            <div class="field">
-              <label>Tanggal Pengumpulan</label>
-              <input type="date" name="tgl_pengumpulan" value="2026-05-22"/>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn-batal" onclick="history.back()">Batal</button>
-            <button type="submit" class="btn-simpan">
-              
-              Simpan Perubahan
-            </button>
-          </div>
+          </form>
 
         </div><!-- /.form-card-inner -->
       </div><!-- /.form-card -->

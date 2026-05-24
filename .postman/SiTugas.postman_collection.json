@@ -1,0 +1,969 @@
+{
+  "info": {
+    "name": "SiTugas - Laravel App",
+    "description": "Koleksi untuk testing semua endpoint SiTugas.\n\n⚠️ PENTING — Urutan penggunaan:\n1. Jalankan request 'GET CSRF Token' dulu\n2. Lanjut login (Guru atau Siswa)\n3. Baru bisa akses endpoint yang butuh auth\n\nSemua cookie & CSRF token di-handle otomatis oleh Postman.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "xsrf_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔑 Setup & Auth",
+      "item": [
+        {
+          "name": "1. GET CSRF Token (Wajib Pertama!)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Ambil XSRF-TOKEN dari cookie dan simpan ke variable",
+                  "const cookies = pm.cookies.toObject();",
+                  "if (cookies['XSRF-TOKEN']) {",
+                  "    const token = decodeURIComponent(cookies['XSRF-TOKEN']);",
+                  "    pm.collectionVariables.set('xsrf_token', token);",
+                  "    console.log('✅ XSRF Token tersimpan:', token.substring(0, 30) + '...');",
+                  "} else {",
+                  "    console.log('❌ Cookie XSRF-TOKEN tidak ditemukan. Pastikan server berjalan.');",
+                  "}",
+                  "pm.test('Status 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Ambil halaman utama untuk mendapatkan cookie XSRF-TOKEN dari Laravel.\nScript otomatis menyimpan token ke variable koleksi."
+          }
+        },
+        {
+          "name": "2a. Login Guru",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Refresh CSRF token sebelum login",
+                  "const cookies = pm.cookies.toObject();",
+                  "if (cookies['XSRF-TOKEN']) {",
+                  "    pm.collectionVariables.set('xsrf_token', decodeURIComponent(cookies['XSRF-TOKEN']));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login berhasil (redirect 302)', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 302) {",
+                  "    const location = pm.response.headers.get('Location');",
+                  "    if (location && location.includes('guru/dashboard')) {",
+                  "        console.log('✅ Login guru berhasil! Redirect ke:', location);",
+                  "    } else {",
+                  "        console.log('⚠️ Redirect ke:', location, '— cek NIP/password');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-XSRF-TOKEN",
+                "value": "{{xsrf_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Referer",
+                "value": "{{base_url}}/login-guru"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "_token",
+                  "value": "{{xsrf_token}}",
+                  "description": "CSRF token untuk form"
+                },
+                {
+                  "key": "nip",
+                  "value": "198501012010011001",
+                  "description": "NIP dari UserSeeder"
+                },
+                {
+                  "key": "password",
+                  "value": "guru123"
+                },
+                {
+                  "key": "remember",
+                  "value": "on",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/login-guru",
+              "host": ["{{base_url}}"],
+              "path": ["login-guru"]
+            },
+            "description": "Login sebagai guru.\n\nCredential default (dari UserSeeder):\n- NIP: 198501012010011001\n- Password: guru123"
+          }
+        },
+        {
+          "name": "2b. Login Siswa",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const cookies = pm.cookies.toObject();",
+                  "if (cookies['XSRF-TOKEN']) {",
+                  "    pm.collectionVariables.set('xsrf_token', decodeURIComponent(cookies['XSRF-TOKEN']));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login berhasil (redirect 302)', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 302) {",
+                  "    const location = pm.response.headers.get('Location');",
+                  "    if (location && location.includes('siswa/dashboard')) {",
+                  "        console.log('✅ Login siswa berhasil! Redirect ke:', location);",
+                  "    } else {",
+                  "        console.log('⚠️ Redirect ke:', location, '— cek NIS/password');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-XSRF-TOKEN",
+                "value": "{{xsrf_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Referer",
+                "value": "{{base_url}}/login"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "_token",
+                  "value": "{{xsrf_token}}"
+                },
+                {
+                  "key": "nis",
+                  "value": "2024001",
+                  "description": "NIS dari UserSeeder"
+                },
+                {
+                  "key": "password",
+                  "value": "siswa123"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            },
+            "description": "Login sebagai siswa.\n\nCredential default (dari UserSeeder):\n- NIS: 2024001\n- Password: siswa123"
+          }
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const cookies = pm.cookies.toObject();",
+                  "if (cookies['XSRF-TOKEN']) {",
+                  "    pm.collectionVariables.set('xsrf_token', decodeURIComponent(cookies['XSRF-TOKEN']));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Logout berhasil', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "console.log('✅ Logout. Redirect ke:', pm.response.headers.get('Location'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-XSRF-TOKEN",
+                "value": "{{xsrf_token}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "_token",
+                  "value": "{{xsrf_token}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/logout",
+              "host": ["{{base_url}}"],
+              "path": ["logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍🏫 Guru — Dashboard",
+      "item": [
+        {
+          "name": "GET Dashboard Guru",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Halaman dashboard ada', () => {",
+                  "    pm.expect(pm.response.text()).to.include('SITUGAS');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/guru/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["guru", "dashboard"]
+            },
+            "description": "Butuh login sebagai guru terlebih dahulu."
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Guru — CRUD Tugas",
+      "item": [
+        {
+          "name": "GET Daftar Semua Tugas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "console.log('Response length:', pm.response.text().length, 'chars');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/guru/kelola-tugas",
+              "host": ["{{base_url}}"],
+              "path": ["guru", "kelola-tugas"]
+            }
+          }
+        },
+        {
+          "name": "GET Detail Tugas (by ID)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 atau 404', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/guru/kelola-tugas/1",
+              "host": ["{{base_url}}"],
+              "path": ["guru", "kelola-tugas", "1"]
+            },
+            "description": "Ganti angka 1 dengan ID tugas yang ada di database."
+          }
+        },
+        {
+          "name": "GET Form Buat Tugas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/guru/buat-tugas",
+              "host": ["{{base_url}}"],
+              "path": ["guru", "buat-tugas"]
+            }
+          }
+        },
+        {
+          "name": "POST Buat Tugas Baru",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const cookies = pm.cookies.toObject();",
+                  "if (cookies['XSRF-TOKEN']) {",
+                  "    pm.collectionVariables.set('xsrf_token', decodeURIComponent(cookies['XSRF-TOKEN']));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Berhasil buat tugas (302 redirect)', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 302) {",
+                  "    console.log('✅ Tugas berhasil dibuat! Redirect ke:', pm.response.headers.get('Location'));",
+                  "} else if (pm.response.code === 200) {",
+                  "    // Mungkin ada error validasi",
+                  "    const body = pm.response.text();",
+                  "    if (body.includes('wajib')) {",
+                  "        console.log('⚠️ Ada error validasi — cek isian form');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-XSRF-TOKEN",
+                "value": "{{xsrf_token}}"
+              },
+              {
+                "key": "Referer",
+                "value": "{{base_url}}/guru/buat-tugas"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "_token",
+                  "value": "{{xsrf_token}}"
+                },
+                {
+                  "key": "judul",
+                  "value": "Tugas Matematika Bab 3"
+                },
+                {
+                  "key": "deskripsi",
+                  "value": "Kerjakan soal halaman 45-50 tentang persamaan kuadrat"
+                },
+                {
+                  "key": "mapel",
+                  "value": "Matematika"
+                },
+                {
+                  "key": "kelas",
+                  "value": "X-A"
+                },
+                {
+                  "key": "tgl_pemberian",
+                  "value": "2026-05-21"
+                },
+                {
+                  "key": "tgl_pengumpulan",
+                  "value": "2026-05-28"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/guru/buat-tugas",
+              "host": ["{{base_url}}"],
+              "path": ["guru", "buat-tugas"]
+            },
+            "description": "Buat tugas baru. Pastikan nilai 'kelas' sesuai dengan kelas yang ada siswa-nya di database agar record pengumpulan otomatis terbuat."
+          }
+        },
+        {
+          "name": "GET Form Edit Tugas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/guru/edit-tugas/1",
+              "host": ["{{base_url}}"],
+              "path": ["guru", "edit-tugas", "1"]
+            },
+            "description": "Ganti 1 dengan ID tugas yang valid."
+          }
+        },
+        {
+          "name": "PUT Update Tugas",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const cookies = pm.cookies.toObject();",
+                  "if (cookies['XSRF-TOKEN']) {",
+                  "    pm.collectionVariables.set('xsrf_token', decodeURIComponent(cookies['XSRF-TOKEN']));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Update berhasil', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "if (pm.response.code === 302) {",
+                  "    console.log('✅ Tugas diupdate! Redirect ke:', pm.response.headers.get('Location'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-XSRF-TOKEN",
+                "value": "{{xsrf_token}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "_token",
+                  "value": "{{xsrf_token}}"
+                },
+                {
+                  "key": "_method",
+                  "value": "PUT",
+                  "description": "Laravel method spoofing untuk PUT"
+                },
+                {
+                  "key": "judul",
+                  "value": "Tugas Matematika Bab 3 (Diperbarui)"
+                },
+                {
+                  "key": "deskripsi",
+                  "value": "Kerjakan soal halaman 45-52 tentang persamaan kuadrat dan fungsi"
+                },
+                {
+                  "key": "mapel",
+                  "value": "Matematika"
+                },
+                {
+                  "key": "kelas",
+                  "value": "X-A"
+                },
+                {
+                  "key": "tgl_pemberian",
+                  "value": "2026-05-21"
+                },
+                {
+                  "key": "tgl_pengumpulan",
+                  "value": "2026-05-30"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/guru/edit-tugas/1",
+              "host": ["{{base_url}}"],
+              "path": ["guru", "edit-tugas", "1"]
+            },
+            "description": "Ganti ID 1 dengan ID tugas yang valid.\n\nPerhatian: Karena Laravel pakai method spoofing, request ini tetap POST tapi dengan field `_method=PUT`."
+          }
+        },
+        {
+          "name": "DELETE Hapus Tugas",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const cookies = pm.cookies.toObject();",
+                  "if (cookies['XSRF-TOKEN']) {",
+                  "    pm.collectionVariables.set('xsrf_token', decodeURIComponent(cookies['XSRF-TOKEN']));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Hapus berhasil', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "if (pm.response.code === 302) {",
+                  "    console.log('✅ Tugas dihapus! Redirect ke:', pm.response.headers.get('Location'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-XSRF-TOKEN",
+                "value": "{{xsrf_token}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "_token",
+                  "value": "{{xsrf_token}}"
+                },
+                {
+                  "key": "_method",
+                  "value": "DELETE",
+                  "description": "Laravel method spoofing untuk DELETE"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/guru/hapus-tugas/1",
+              "host": ["{{base_url}}"],
+              "path": ["guru", "hapus-tugas", "1"]
+            },
+            "description": "⚠️ HATI-HATI — ini menghapus tugas permanen beserta semua data pengumpulan!\n\nGanti ID 1 dengan ID tugas yang ingin dihapus."
+          }
+        },
+        {
+          "name": "PATCH Toggle Status Pengumpulan",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const cookies = pm.cookies.toObject();",
+                  "if (cookies['XSRF-TOKEN']) {",
+                  "    pm.collectionVariables.set('xsrf_token', decodeURIComponent(cookies['XSRF-TOKEN']));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Toggle berhasil', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "console.log('Status pengumpulan berhasil di-toggle');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-XSRF-TOKEN",
+                "value": "{{xsrf_token}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "_token",
+                  "value": "{{xsrf_token}}"
+                },
+                {
+                  "key": "_method",
+                  "value": "PATCH"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/guru/toggle-status/1",
+              "host": ["{{base_url}}"],
+              "path": ["guru", "toggle-status", "1"]
+            },
+            "description": "Toggle status pengumpulan siswa antara 'belum' dan 'sudah'.\n\nGanti ID 1 dengan ID record di tabel pengumpulan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎓 Siswa — Tugas",
+      "item": [
+        {
+          "name": "GET Dashboard Siswa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/siswa/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["siswa", "dashboard"]
+            },
+            "description": "Butuh login sebagai siswa."
+          }
+        },
+        {
+          "name": "GET Daftar Tugas Siswa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/siswa/tugas",
+              "host": ["{{base_url}}"],
+              "path": ["siswa", "tugas"]
+            }
+          }
+        },
+        {
+          "name": "PATCH Tandai Tugas Sudah Dikerjakan",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const cookies = pm.cookies.toObject();",
+                  "if (cookies['XSRF-TOKEN']) {",
+                  "    pm.collectionVariables.set('xsrf_token', decodeURIComponent(cookies['XSRF-TOKEN']));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Berhasil tandai sudah', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "if (pm.response.code === 302) {",
+                  "    console.log('✅ Tugas ditandai sudah dikerjakan!');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-XSRF-TOKEN",
+                "value": "{{xsrf_token}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "_token",
+                  "value": "{{xsrf_token}}"
+                },
+                {
+                  "key": "_method",
+                  "value": "PATCH"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/siswa/tugas/1/tandai-sudah",
+              "host": ["{{base_url}}"],
+              "path": ["siswa", "tugas", "1", "tandai-sudah"]
+            },
+            "description": "Ganti ID 1 dengan ID tugas yang ingin ditandai."
+          }
+        },
+        {
+          "name": "GET Notifikasi Siswa",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/siswa/notifikasi",
+              "host": ["{{base_url}}"],
+              "path": ["siswa", "notifikasi"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔍 Validasi & Edge Cases",
+      "item": [
+        {
+          "name": "POST Login Guru — NIP Salah",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const cookies = pm.cookies.toObject();",
+                  "if (cookies['XSRF-TOKEN']) {",
+                  "    pm.collectionVariables.set('xsrf_token', decodeURIComponent(cookies['XSRF-TOKEN']));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login gagal — redirect kembali ke form (302)', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 302) {",
+                  "    const loc = pm.response.headers.get('Location');",
+                  "    pm.test('Redirect ke halaman login (bukan dashboard)', () => {",
+                  "        pm.expect(loc).to.not.include('dashboard');",
+                  "    });",
+                  "    console.log('✅ Login ditolak dengan benar. Redirect ke:', loc);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-XSRF-TOKEN",
+                "value": "{{xsrf_token}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "_token",
+                  "value": "{{xsrf_token}}"
+                },
+                {
+                  "key": "nip",
+                  "value": "NIP_YANG_SALAH_999"
+                },
+                {
+                  "key": "password",
+                  "value": "passwordsalah"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/login-guru",
+              "host": ["{{base_url}}"],
+              "path": ["login-guru"]
+            },
+            "description": "Verifikasi bahwa login dengan NIP salah ditolak dengan benar."
+          }
+        },
+        {
+          "name": "POST Buat Tugas — Validasi Gagal (Field Kosong)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const cookies = pm.cookies.toObject();",
+                  "if (cookies['XSRF-TOKEN']) {",
+                  "    pm.collectionVariables.set('xsrf_token', decodeURIComponent(cookies['XSRF-TOKEN']));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Validasi menolak form kosong (kembali ke form)', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "console.log('Response code:', pm.response.code);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-XSRF-TOKEN",
+                "value": "{{xsrf_token}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "_token",
+                  "value": "{{xsrf_token}}"
+                },
+                {
+                  "key": "judul",
+                  "value": "",
+                  "description": "Sengaja kosong untuk trigger validasi"
+                },
+                {
+                  "key": "mapel",
+                  "value": ""
+                },
+                {
+                  "key": "kelas",
+                  "value": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/guru/buat-tugas",
+              "host": ["{{base_url}}"],
+              "path": ["guru", "buat-tugas"]
+            }
+          }
+        },
+        {
+          "name": "GET Akses Guru Tanpa Login (Harus Ditolak)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Akses ditolak — redirect ke login (302)', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([302, 403]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 302) {",
+                  "    const loc = pm.response.headers.get('Location');",
+                  "    console.log('✅ Middleware bekerja. Redirect ke:', loc);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/guru/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["guru", "dashboard"]
+            },
+            "description": "Test ini hanya valid jika kamu BELUM login (atau setelah logout).\n\nHarapan: redirect ke halaman login, bukan 200."
+          }
+        }
+      ]
+    }
+  ]
+}

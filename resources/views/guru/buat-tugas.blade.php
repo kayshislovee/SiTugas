@@ -426,62 +426,66 @@
 
         <hr class="form-divider"/>
 
-        <div class="field">
-          <label>Judul Tugas</label>
-          <input type="text" name="judul" placeholder="Masukkan judul tugas..."/>
-        </div>
+        <form method="POST" action="{{ route('guru.store-tugas') }}">
+          @csrf
 
-        <div class="field">
-          <label>Deskripsi Tugas</label>
-          <textarea name="deskripsi" placeholder="Masukkan deskripsi tugas..."></textarea>
-        </div>
-
-        <div class="row-2">
           <div class="field">
-            <label>Mata Pelajaran</label>
-            <div class="select-wrap">
-              <select name="mapel">
-                <option value="" disabled selected>Pilih Mapel</option>
-                <option>Matematika</option>
-                <option>Bahasa Indonesia</option>
-                <option>Fisika</option>
-                <option>Kimia</option>
-                <option>Biologi</option>
-                <option>Bahasa Inggris</option>
-              </select>
+            <label>Judul Tugas</label>
+            <input type="text" name="judul" placeholder="Masukkan judul tugas..." required/>
+          </div>
+
+          <div class="field">
+            <label>Deskripsi Tugas</label>
+            <textarea name="deskripsi" placeholder="Masukkan deskripsi tugas..."></textarea>
+          </div>
+
+          <div class="row-2">
+            <div class="field">
+              <label>Mata Pelajaran</label>
+              <div class="select-wrap">
+                <select name="mapel" required>
+                  <option value="" disabled selected>Pilih Mapel</option>
+                  <option>Matematika</option>
+                  <option>Bahasa Indonesia</option>
+                  <option>Fisika</option>
+                  <option>Kimia</option>
+                  <option>Biologi</option>
+                  <option>Bahasa Inggris</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Kelas</label>
+              <div class="select-wrap">
+                <select name="kelas" required>
+                  <option value="" disabled selected>Pilih Kelas</option>
+                  <option>X-A</option>
+                  <option>X-B</option>
+                  <option>XI-A</option>
+                  <option>XI-B</option>
+                  <option>XII-A</option>
+                  <option>XII-B</option>
+                </select>
+              </div>
             </div>
           </div>
-          <div class="field">
-            <label>Kelas</label>
-            <div class="select-wrap">
-              <select name="kelas">
-                <option value="" disabled selected>Pilih Kelas</option>
-                <option>X-A</option>
-                <option>X-B</option>
-                <option>XI-A</option>
-                <option>XI-B</option>
-                <option>XII-A</option>
-                <option>XII-B</option>
-              </select>
+
+          <div class="row-2">
+            <div class="field">
+              <label>Tanggal Pemberian</label>
+              <input type="date" name="tgl_pemberian" required/>
+            </div>
+            <div class="field">
+              <label>Tanggal Pengumpulan</label>
+              <input type="date" name="tgl_pengumpulan" required/>
             </div>
           </div>
-        </div>
 
-        <div class="row-2">
-          <div class="field">
-            <label>Tanggal Pemberian</label>
-            <input type="date" name="tgl_pemberian"/>
+          <div class="form-actions">
+            <button type="button" class="btn-batal" onclick="history.back()">Batal</button>
+            <button type="submit" class="btn-simpan">Simpan Tugas</button>
           </div>
-          <div class="field">
-            <label>Tanggal Pengumpulan</label>
-            <input type="date" name="tgl_pengumpulan"/>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn-batal" onclick="history.back()">Batal</button>
-          <button type="submit" class="btn-simpan">Simpan Tugas</button>
-        </div><!-- /.form-actions -->
+        </form>
         </div><!-- /.form-card-inner -->
       </div><!-- /.form-card -->
     </div>

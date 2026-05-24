@@ -335,6 +335,27 @@
         Notifikasi
       </a>
     </nav>
+
+    <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.28);">
+      <div style="display: flex; align-items: center; gap: 11px; padding: 11px 16px; margin-bottom: 12px;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px;">👨‍🎓</div>
+        <div>
+          <p style="font-size: 13px; font-weight: 600; color: #fff; margin: 0;">{{ auth()->user()->name }}</p>
+          <p style="font-size: 11px; color: rgba(255,255,255,0.65); margin: 2px 0 0 0;">{{ auth()->user()->kelas }}</p>
+        </div>
+      </div>
+      <form action="{{ route('logout') }}" method="POST" style="width: 100%;">
+        @csrf
+        <button type="submit" style="width: 100%; display: flex; align-items: center; gap: 11px; padding: 11px 16px; border-radius: 10px; background: rgba(255,255,255,0.1); border: none; cursor: pointer; color: rgba(255,255,255,0.75); font-size: 14px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.75)';">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 19px; height: 19px; stroke: currentColor; fill: none;">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Keluar
+        </button>
+      </form>
+    </div>
   </aside>
 
 <!-- MAIN -->

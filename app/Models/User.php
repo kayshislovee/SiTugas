@@ -5,19 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * MASALAH: Model User bawaan Laravel tidak menyertakan 'nis', 'nip', 'kelas', 'nama'
+ * di $fillable maupun tidak mengubah $authPassword default.
+ * Akibatnya login gagal atau data tidak tersimpan.
+ */
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
+        'email',
         'nis',
         'nip',
+        'password',
         'role',
         'kelas',
-        'password',
     ];
 
     protected $hidden = [
@@ -29,13 +34,30 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    // Helper: cek apakah user adalah guru
+    // ─── Relasi ─────────────────────────────────────────────────
+
+    public function tugasSebagaiGuru()
+    {
+        return $this->hasMany(Tugas::class, 'guru_id');
+    }
+
+    public function pengumpulan()
+    {
+        return $this->hasMany(Pengumpulan::class, 'siswa_id');
+    }
+
+    public function notifikasi()
+    {
+        return $this->hasMany(Notifikasi::class, 'user_id');
+    }
+
+    // ─── Helper ─────────────────────────────────────────────────
+
     public function isGuru(): bool
     {
         return $this->role === 'guru';
     }
 
-    // Helper: cek apakah user adalah siswa
     public function isSiswa(): bool
     {
         return $this->role === 'siswa';
