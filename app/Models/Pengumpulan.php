@@ -16,13 +16,17 @@ class Pengumpulan extends Model
         'siswa_id',
         'status',
         'dikumpulkan_at',
+        'file_path',
+        'file_original_name',
+        'catatan',
     ];
 
     protected $casts = [
         'dikumpulkan_at' => 'datetime',
     ];
 
-    // ─── Relasi ───────────────────────────────────────
+    // ─── Relasi ─────────────────────────────────────────────────
+
     public function tugas()
     {
         return $this->belongsTo(Tugas::class, 'tugas_id');
@@ -31,5 +35,12 @@ class Pengumpulan extends Model
     public function siswa()
     {
         return $this->belongsTo(User::class, 'siswa_id');
+    }
+
+    // ─── Helper ─────────────────────────────────────────────────
+
+    public function sudah(): bool
+    {
+        return $this->status !== 'belum';
     }
 }

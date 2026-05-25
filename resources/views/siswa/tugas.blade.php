@@ -378,7 +378,7 @@
 
     <!-- Nav -->
     <nav class="nav-menu">
-      <a href="/guru/dashboard" class="nav-item">
+      <a href="/siswa/dashboard" class="nav-item">
         <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="7" height="7" rx="1.2"/>
           <rect x="14" y="3" width="7" height="7" rx="1.2"/>
@@ -388,7 +388,7 @@
         Dashboard
       </a>
 
-      <a href="/guru/kelola-tugas" class="nav-item active">
+      <a href="/siswa/tugas" class="nav-item active">
         <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 11l3 3L22 4"/>
           <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
@@ -396,7 +396,7 @@
         Tugas
       </a>
 
-      <a href="/guru/notifikasi" class="nav-item">
+      <a href="/siswa/notifikasi" class="nav-item">
         <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -412,103 +412,48 @@
 
     <!-- Topbar -->
     <header class="topbar">
-      <a href="/guru/buat-tugas" class="btn-buat" style="text-decoration:none;">Buat Tugas</a>
+      <span style="font-size:14px;font-weight:600;color:#6e7faa;">Daftar Tugas Saya</span>
     </header>
 
     <!-- Content -->
     <div class="content">
 
+      @forelse($pengumpulan as $p)
       <!-- Card Info Tugas -->
       <div class="card">
         <div class="tugas-header-row">
           <div class="tugas-header" style="padding:0; flex:1;">
-            <h2>Judul Tugas</h2>
+            <h2>{{ $p->tugas->judul }}</h2>
             <div class="tugas-meta">
-              <span class="meta-plain">Mapel</span>
-              <span class="badge badge-blue">Kelas</span>
-              <span class="badge badge-red">Tanggal Tugas</span>
+              <span class="meta-plain">{{ $p->tugas->mapel }}</span>
+              <span class="badge badge-blue">{{ $p->tugas->kelas }}</span>
+              <span class="badge badge-red">Deadline: {{ $p->tugas->tgl_pengumpulan->format('d M Y') }}</span>
+              @if($p->status === 'sudah')
+                <span class="badge" style="background:#dcfce7;color:#166534;">✓ Sudah Dikumpulkan</span>
+              @elseif($p->tugas->isExpired())
+                <span class="badge" style="background:#fee2e2;color:#991b1b;">Terlambat</span>
+              @else
+                <span class="badge" style="background:#fef9c3;color:#854d0e;">Belum Dikumpulkan</span>
+              @endif
             </div>
           </div>
-          <button class="btn-edit">Edit Tugas</button>
         </div>
 
         <hr class="tugas-divider"/>
 
         <div class="tugas-desc">
-          Deskripsi Tugas
+          {{ $p->tugas->deskripsi ?? '(Tidak ada deskripsi)' }}
         </div>
       </div>
-
-      <!-- Card Daftar Pengumpulan -->
-      <div class="card">
-        <div class="pengumpulan-header">
-          <h3>Daftar Pengumpulan</h3>
-          <input class="search-box" type="text" placeholder="Cari nama murid..."/>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Nama Siswa</th>
-              <th>NIS</th>
-              <th>Kelas</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Raden Mas Aris Munandar</td>
-              <td>324577</td>
-              <td>XII TKJ 2</td>
-              <td><span class="status-sudah">Sudah Dikerjakan</span></td>
-              <td><button class="btn-tandai-belum">Tandai Belum</button></td>
-            </tr>
-            <tr>
-              <td>Raden Mas Aris Munandar</td>
-              <td>324577</td>
-              <td>XII TKJ 2</td>
-              <td><span class="status-belum">Belum Dikerjakan</span></td>
-              <td><button class="btn-tandai-sudah">Tandai Sudah</button></td>
-            </tr>
-          </tbody>
-        </table>
+      @empty
+      <div class="card" style="padding:40px;text-align:center;color:#9aa5c4;">
+        <p style="font-size:15px;font-weight:600;">Belum ada tugas untukmu saat ini.</p>
+        <p style="font-size:13px;margin-top:6px;">Tugas akan muncul di sini ketika gurumu menambahkan tugas untuk kelasmu.</p>
       </div>
+      @endforelse
 
     </div>
   </div>
-
-  <script>
-    // Toggle status saat tombol diklik
-    document.querySelectorAll('.btn-tandai-belum').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const row = this.closest('tr');
-        row.querySelector('td:nth-child(4)').innerHTML = '<span class="status-belum">Belum Dikerjakan</span>';
-        this.outerHTML = '<button class="btn-tandai-sudah">Tandai Sudah</button>';
-        rebindButtons();
-      });
-    });
-
-    function rebindButtons() {
-      document.querySelectorAll('.btn-tandai-sudah').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const row = this.closest('tr');
-          row.querySelector('td:nth-child(4)').innerHTML = '<span class="status-sudah">Sudah Dikerjakan</span>';
-          this.outerHTML = '<button class="btn-tandai-belum">Tandai Belum</button>';
-          rebindButtons();
-        });
-      });
-      document.querySelectorAll('.btn-tandai-belum').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const row = this.closest('tr');
-          row.querySelector('td:nth-child(4)').innerHTML = '<span class="status-belum">Belum Dikerjakan</span>';
-          this.outerHTML = '<button class="btn-tandai-sudah">Tandai Sudah</button>';
-          rebindButtons();
-        });
-      });
-    }
-    rebindButtons();
-  </script>
 
 </body>
 </html>

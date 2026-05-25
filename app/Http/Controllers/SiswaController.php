@@ -1,68 +1,56 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\App\Http\Controllers;
 
-use App\Models\Tugas;
-use App\Models\Pengumpulan;
 use Illuminate\Http\Request;
+use App\Models\Notifikasi;
 use Illuminate\Support\Facades\Auth;
 
-class SiswaController extends Controller
+class NotifikasiController extends Controller
 {
-    // ─── [SISWA] Dashboard ────────────────────────────────────────────
-    public function dashboard()
+    /**
+     * Menampilkan daftar semua notifikasi milik user yang sedang login (Siswa).
+     */
+    public function index()
     {
-        $siswa = Auth::user();
+        // 1. Mengambil data user (siswa) yang sedang login
+        $user = Auth::user();
 
-        // Tugas untuk kelas siswa
-        $semuaTugas = Tugas::where('kelas', $siswa->kelas)->get();
+        // 2. Mengambil semua notifikasi khusus untuk siswa tersebut, urut dari yang terbaru
+        $notifikasi = Notifikasi::where('user_id', $user->user_id)
+                                ->latest()
+                                ->get();
 
-        // Status pengumpulan milik siswa ini
-        $idSudah = Pengumpulan::where('siswa_id', $siswa->id)
-            ->where('status', '!=', 'belum')
-            ->pluck('tugas_id')
-            ->toArray();
-
-        $sudahCount  = count($idSudah);
-        $belumCount  = $semuaTugas->count() - $sudahCount;
-        $totalCount  = $semuaTugas->count();
-
-        return view('siswa.dashboard', compact('sudahCount', 'belumCount', 'totalCount'));
+        // 3. Mengarahkan ke halaman view notifikasi siswa dengan membawa datanya
+        return view('siswa.notifikasi', compact('notifikasi'));
     }
 
-    // ─── [SISWA] Daftar tugas ─────────────────────────────────────────
-    public function tugasList()
+    /**
+     * Mengubah status notifikasi tertentu menjadi sudah dibaca (Tandai telah dibaca).
+     */
+    public function markAsRead($id)
     {
-        $siswa = Auth::user();
+        // Mencari notifikasi berdasarkan notif_id
+        $notif = Notifikasi::where('notif_id', $id)
+                           ->where('user_id', Auth::id())
+                           ->first();
 
-        $tugas = Tugas::where('kelas', $siswa->kelas)
-            ->with(['pengumpulan' => fn($q) => $q->where('siswa_id', $siswa->id)])
-            ->latest()
-            ->get()
-            ->map(function ($t) use ($siswa) {
-                $p = $t->pengumpulan->first();
-                $t->status_siswa = $p ? $p->status : 'belum';
-                return $t;
-            });
-
-        return view('siswa.tugas', compact('tugas'));
-    }
-
-    // ─── [SISWA] Tandai tugas sudah dikerjakan (self-report) ──────────
-    public function tandaiSudah(Tugas $tugas)
-    {
-        $siswa = Auth::user();
-
-        // Pastikan tugas ini untuk kelas siswa
-        if ($tugas->kelas !== $siswa->kelas) {
-            abort(403, 'Tugas ini bukan untuk kelas kamu.');
+        if ($notif) {
+            $notif->update(['is_read' => true]);
         }
 
-        Pengumpulan::updateOrCreate(
-            ['tugas_id' => $tugas->id, 'siswa_id' => $siswa->id],
-            ['status' => 'sudah', 'dikumpulkan_at' => now()]
-        );
+        return redirect()->back()->with('success', 'Notifikasi ditandai telah dibaca.');
+    }
 
-        return back()->with('success', 'Tugas ditandai sudah dikerjakan.');
+    /**
+     * Mengubah SEMUA notifikasi milik siswa tersebut menjadi sudah dibaca sekaligus.
+     */
+    public function markAllAsRead()
+    {
+        Notifikasi::where('user_id', Auth::id())
+                  ->where('is_read', false)
+                  ->update(['is_read' => true]);
+
+        return redirect()->back()->with('success', 'Semua notifikasi telah dibaca.');
     }
 }

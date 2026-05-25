@@ -24,6 +24,18 @@ use Illuminate\Support\Facades\Auth;
  */
 class TugasController extends Controller
 {
+    // ─── [SISWA] Daftar tugas milik siswa ──────────────────────
+    public function tugasSiswa()
+    {
+        $siswa = Auth::user();
+        $pengumpulan = \App\Models\Pengumpulan::where('siswa_id', $siswa->id)
+            ->with('tugas')
+            ->latest()
+            ->get();
+
+        return view('siswa.tugas', compact('siswa', 'pengumpulan'));
+    }
+
     // ─── [GURU] Dashboard guru ──────────────────────────────────
     public function dashboardGuru()
     {
@@ -45,18 +57,26 @@ class TugasController extends Controller
     public function dashboardSiswa()
     {
         $siswa = Auth::user();
-        $tugasBelumSelesai = Pengumpulan::where('siswa_id', $siswa->id)
+
+        // Gunakan DB::table() langsung agar tidak terkena auto-pluralisasi Laravel
+        $tugasBelumSelesai = \DB::table('pengumpulan')
+            ->where('siswa_id', $siswa->id)
             ->where('status', 'belum')
-            ->with('tugas')
             ->count();
-        $tugasSelesai = Pengumpulan::where('siswa_id', $siswa->id)
+
+        $tugasSelesai = \DB::table('pengumpulan')
+            ->where('siswa_id', $siswa->id)
             ->where('status', 'sudah')
-            ->with('tugas')
             ->count();
-        $tugasTotal = Pengumpulan::where('siswa_id', $siswa->id)->count();
+
+        $tugasTotal = \DB::table('pengumpulan')
+            ->where('siswa_id', $siswa->id)
+            ->count();
+
         $notifikasiTerbaru = Notifikasi::where('user_id', $siswa->id)
             ->where('dibaca', false)
             ->count();
+
         $tugasRecentLimit = Pengumpulan::where('siswa_id', $siswa->id)
             ->with('tugas')
             ->latest()
@@ -71,7 +91,7 @@ class TugasController extends Controller
     {
         $tugas = Tugas::where('guru_id', Auth::id())
             ->withCount([
-                'pengumpulan',
+                'pengumpulan as pengumpulan_count',
                 'pengumpulan as sudah_count' => fn($q) => $q->where('status', '!=', 'belum'),
             ])
             ->latest()

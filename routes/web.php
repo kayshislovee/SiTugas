@@ -45,10 +45,8 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
     Route::delete('/kelola-tugas/{tugas}', [TugasController::class, 'destroy'])->name('destroy-tugas');
     Route::post('/toggle-status/{pengumpulan}', [TugasController::class, 'toggleStatus'])->name('toggle-status');
 
-    // Halaman static pelengkap guru
-    Route::get('/buat-tugas', function () {
-        return view('guru.buat-tugas');
-    })->name('buat-tugas');
+    // Form buat tugas (melalui controller)
+    Route::get('/buat-tugas', [TugasController::class, 'create'])->name('buat-tugas');
 
     Route::get('/notifikasi', function () {
         return view('guru.notifikasi');
@@ -62,9 +60,7 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->grou
 
     Route::get('/dashboard', [TugasController::class, 'dashboardSiswa'])->name('dashboard');
 
-    Route::get('/tugas', function () {
-        return view('siswa.tugas');
-    })->name('tugas');
+    Route::get('/tugas', [TugasController::class, 'tugasSiswa'])->name('tugas');
 
     // --- PERUBAHAN FITUR NOTIFIKASI DINAMIS SISWA ---
     // Membuka halaman list notifikasi dari database
