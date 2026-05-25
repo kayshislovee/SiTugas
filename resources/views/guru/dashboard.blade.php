@@ -805,7 +805,6 @@ tbody td {
 
     <div class="sidebar-footer">
       <div class="user-profile">
-        <div class="user-avatar">👨‍🏫</div>
         <div class="user-info">
           <p class="user-name">{{ auth()->user()->name }}</p>
           <p class="user-role">Guru</p>
@@ -996,16 +995,6 @@ tbody td {
         </div>
       </div>
     </section>
-
-    <!-- BOTTOM ROW: Aktivitas Kelas + Notifikasi -->
-    
-
-      <!-- Notifikasi -->
-      <section class="notif-card">
-        <p class="notif-tag">PENGUMUMAN TERBARU</p>
-        <p class="notif-text">Input Nilai UTS Semester Ganjil ditutup dalam 2 hari.</p>
-        <a href="/guru/notifikasi" class="btn-notif">Baca Selengkapnya</a>
-      </section>
 
     </div>
   </main>

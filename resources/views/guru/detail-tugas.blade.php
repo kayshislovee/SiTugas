@@ -155,6 +155,18 @@
         </div>
         <div class="card-body">
           {{ $tugas->deskripsi ?? '(Tidak ada deskripsi)' }}
+          
+          @if($tugas->file_path)
+            <div style="margin-top: 20px; padding: 16px; background: #f5f8ff; border: 1px solid #dce4ff; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
+              <div style="width: 32px; height: 32px; background: #e0e7ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;">📄</div>
+              <div style="flex: 1;">
+                <div style="font-size: 13px; font-weight: 600; color: #2d52ff; word-break: break-all;">{{ $tugas->file_original_name }}</div>
+              </div>
+              <a href="{{ asset('storage/' . $tugas->file_path) }}" download style="padding: 8px 16px; background: #2d52ff; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block;">
+                Download
+              </a>
+            </div>
+          @endif
         </div>
       </div>
 
@@ -179,6 +191,7 @@
               <th>Nama Siswa</th>
               <th>NIS</th>
               <th>Status</th>
+              <th>File</th>
               <th>Dikumpulkan</th>
               <th>Aksi</th>
             </tr>
@@ -192,8 +205,19 @@
               <td>
                 @if($p->status === 'sudah')
                   <span class="status-sudah">Sudah</span>
+                @elseif($p->status === 'proses')
+                  <span style="display: inline-block; padding: 5px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgba(245, 158, 11, 0.1); color: #f59e0b;">Proses</span>
                 @else
                   <span class="status-belum">Belum</span>
+                @endif
+              </td>
+              <td>
+                @if($p->file_path)
+                  <a href="{{ asset('storage/' . $p->file_path) }}" download style="color: #2d52ff; text-decoration: none; font-weight: 600;">
+                    {{ $p->file_original_name ?? 'Download' }}
+                  </a>
+                @else
+                  <span style="color: #bcc5dd;">-</span>
                 @endif
               </td>
               <td>{{ $p->dikumpulkan_at ? $p->dikumpulkan_at->format('d M Y H:i') : '-' }}</td>

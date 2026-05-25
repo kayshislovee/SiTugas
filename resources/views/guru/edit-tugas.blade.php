@@ -381,7 +381,7 @@
 
           <hr class="form-divider"/>
 
-          <form method="POST" action="{{ route('guru.update-tugas', $tugas->id) }}">
+          <form method="POST" action="{{ route('guru.update-tugas', $tugas->id) }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -393,6 +393,27 @@
             <div class="field">
               <label>Deskripsi Tugas</label>
               <textarea name="deskripsi" placeholder="Masukkan deskripsi tugas...">{{ $tugas->deskripsi }}</textarea>
+            </div>
+
+            <div class="field">
+              <label>File Tugas (Opsional - kosongkan jika tidak ingin mengubah)</label>
+              <div style="position: relative; border: 2px dashed #dce4ff; border-radius: 12px; padding: 24px 16px; text-align: center; cursor: pointer; background: #fafbff; transition: all 0.2s;" class="file-upload-box">
+                <div style="font-size: 28px; margin-bottom: 8px;">📤</div>
+                <div style="font-size: 13px; font-weight: 600; color: #2d52ff; margin-bottom: 4px;">Pilih file atau drag & drop</div>
+                <div style="font-size: 11px; color: #9aa5c4;">PDF, Word, Excel, PowerPoint, TXT, ZIP (max 10MB)</div>
+                <input type="file" id="file_tugas" name="file_tugas" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip" style="display: none;" onchange="updateFileName()"/>
+              </div>
+              <div id="file-selected" style="margin-top: 8px; padding: 8px 12px; background: #d1fae5; border-radius: 8px; color: #065f46; font-size: 12px; display: none;">
+                ✓ <span id="file-name"></span> dipilih
+              </div>
+
+              @if($tugas->file_path)
+                <div style="margin-top: 12px; padding: 12px; background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 10px; font-size: 12px; color: #1e40af;">
+                  <div style="font-weight: 700; margin-bottom: 6px;">📄 File saat ini:</div>
+                  <div style="margin-bottom: 6px;">{{ $tugas->file_original_name }}</div>
+                  <a href="{{ asset('storage/' . $tugas->file_path) }}" download style="color: #2d52ff; text-decoration: none; font-weight: 600;">Download</a>
+                </div>
+              @endif
             </div>
 
             <div class="row-2">
@@ -447,6 +468,39 @@
       </div><!-- /.form-card -->
     </div>
   </div>
+
+  <script>
+    function updateFileName() {
+      const fileInput = document.getElementById('file_tugas');
+      const fileSelected = document.getElementById('file-selected');
+      const fileName = document.getElementById('file-name');
+
+      if (fileInput.files && fileInput.files[0]) {
+        fileName.textContent = fileInput.files[0].name;
+        fileSelected.style.display = 'block';
+      } else {
+        fileSelected.style.display = 'none';
+      }
+    }
+
+    // Hover effect untuk file upload box
+    const fileUploadBox = document.querySelector('.file-upload-box');
+    if (fileUploadBox) {
+      fileUploadBox.addEventListener('click', function() {
+        document.getElementById('file_tugas').click();
+      });
+
+      fileUploadBox.addEventListener('mouseover', function() {
+        this.style.borderColor = '#2d52ff';
+        this.style.background = '#f0f4ff';
+      });
+
+      fileUploadBox.addEventListener('mouseout', function() {
+        this.style.borderColor = '#dce4ff';
+        this.style.background = '#fafbff';
+      });
+    }
+  </script>
 
 </body>
 </html>
