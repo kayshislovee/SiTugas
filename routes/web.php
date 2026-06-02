@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TugasController;
 use App\Http\Controllers\NotifikasiController;
+use App\Http\Controllers\Siswa\PengumpulanController; // Sesuaikan path controller-nya
+
 
 // ───────────────────────────────────────────────
 // Halaman Utama
@@ -45,10 +47,8 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
     Route::delete('/kelola-tugas/{tugas}', [TugasController::class, 'destroy'])->name('destroy-tugas');
     Route::post('/toggle-status/{pengumpulan}', [TugasController::class, 'toggleStatus'])->name('toggle-status');
 
-    // Halaman static pelengkap guru
-    Route::get('/buat-tugas', function () {
-        return view('guru.buat-tugas');
-    })->name('buat-tugas');
+    // Form buat tugas (melalui controller)
+    Route::get('/buat-tugas', [TugasController::class, 'create'])->name('buat-tugas');
 
     Route::get('/notifikasi', function () {
         return view('guru.notifikasi');
@@ -62,15 +62,20 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->grou
 
     Route::get('/dashboard', [TugasController::class, 'dashboardSiswa'])->name('dashboard');
 
-    Route::get('/tugas', function () {
-        return view('siswa.tugas');
-    })->name('tugas');
+    Route::get('/tugas', [TugasController::class, 'tugasSiswa'])->name('tugas');
 
-    // --- PERUBAHAN FITUR NOTIFIKASI DINAMIS SISWA ---
-    // Membuka halaman list notifikasi dari database
+    // Student Task Upload & Submission Routes
+    Route::get('/tugas/{tugas}', [TugasController::class, 'detailTugasSiswa'])->name('detail-tugas');
+    Route::post('/tugas/{tugas}/submit', [TugasController::class, 'submitTugas'])->name('submit-tugas');
+    Route::get('/tugas/{tugas}/edit-pengumpulan', [TugasController::class, 'editPengumpulanSiswa'])->name('edit-pengumpulan');
+    Route::put('/tugas/{tugas}/update-pengumpulan', [TugasController::class, 'updatePengumpulanSiswa'])->name('update-pengumpulan');
+
+    // Notifikasi Routes
     Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi');
-    
-    // Aksi tombol untuk membaca satu atau semua notifikasi milik siswa
     Route::post('/notifikasi/{id}/read', [NotifikasiController::class, 'markAsRead'])->name('notifikasi.read');
     Route::post('/notifikasi/read-all', [NotifikasiController::class, 'markAllAsRead'])->name('notifikasi.readAll');
 });
+
+
+
+    

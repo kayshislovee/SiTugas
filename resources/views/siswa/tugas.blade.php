@@ -322,8 +322,11 @@
   </aside>
 
 
+
 <!-- MAIN -->
 <main class="main">
+
+    
 
   <!-- Card: Detail Tugas -->
   <div class="card">
@@ -336,6 +339,7 @@
     <div class="divider"></div>
     <p class="tugas-desc">Kerjakan latihan soal halaman 120–125 di buku paket Matematika Peminatan.</p>
   </div>
+
 
   <!-- Card: Daftar Pengumpulan -->
   <div class="card">
@@ -384,5 +388,7 @@
   </div>
 
 </main>
+
+
 </body>
 </html>

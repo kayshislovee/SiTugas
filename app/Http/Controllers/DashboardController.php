@@ -18,7 +18,7 @@ class DashboardController extends Controller
 
         $tugasTerbaru = Tugas::where('guru_id', $guru->id)
             ->withCount([
-                'pengumpulan',
+                'pengumpulan as pengumpulan_count',
                 'pengumpulan as sudah_count' => fn($q) => $q->where('status', '!=', 'belum'),
             ])
             ->latest()
@@ -44,7 +44,8 @@ class DashboardController extends Controller
 
         $semuaTugas = Tugas::where('kelas', $siswa->kelas)->count();
 
-        $sudahCount = Pengumpulan::where('siswa_id', $siswa->id)
+        $sudahCount = \DB::table('pengumpulan')
+            ->where('siswa_id', $siswa->id)
             ->where('status', '!=', 'belum')
             ->count();
 

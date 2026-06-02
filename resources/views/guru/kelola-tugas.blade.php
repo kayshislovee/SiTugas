@@ -439,81 +439,54 @@
     <!-- Content -->
     <div class="content">
 
+      {{-- Flash message sukses --}}
+      @if(session('success'))
+        <div style="background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;padding:12px 20px;border-radius:10px;font-size:13.5px;font-weight:600;">
+          ✓ {{ session('success') }}
+        </div>
+      @endif
+
+      @forelse($tugas as $t)
       <!-- Card Info Tugas -->
       <div class="card">
         <div class="tugas-header-row">
           <div class="tugas-header" style="padding:0; flex:1;">
-            <h2>Judul Tugas</h2>
+            <h2>{{ $t->judul }}</h2>
             <div class="tugas-meta">
-              <span class="meta-plain">Mapel</span>
-              <span class="badge badge-blue">Kelas</span>
-              <span class="badge badge-red">Tanggal Tugas</span>
+              <span class="meta-plain">{{ $t->mapel }}</span>
+              <span class="badge badge-blue">{{ $t->kelas }}</span>
+              <span class="badge badge-red">Deadline: {{ \App\Helpers\DateHelper::safeFormat($t->tgl_pengumpulan, 'd M Y') }}</span>
+              <span class="badge" style="background:#fef9c3;color:#854d0e;">
+                {{ $t->sudah_count ?? 0 }}/{{ $t->pengumpulan_count }} dikumpulkan
+              </span>
             </div>
           </div>
-          <button class="btn-edit" onclick="editTugas(this)" data-tugas-id="1">Edit Tugas</button>
+          <a href="{{ route('guru.edit-tugas', $t->id) }}" class="btn-edit">Edit Tugas</a>
         </div>
 
         <hr class="tugas-divider"/>
 
         <div class="tugas-desc">
-          Deskripsi Tugas
+          {{ $t->deskripsi ?? '(Tidak ada deskripsi)' }}
         </div>
       </div>
-
-      <!-- Card Daftar Pengumpulan -->
-      <div class="card">
-        <div class="pengumpulan-header">
-          <h3>Daftar Pengumpulan</h3>
-          <input class="search-box" type="text" placeholder="Cari nama murid..."/>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Nama Siswa</th>
-              <th>NIS</th>
-              <th>Kelas</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Raden Mas Aris Munandar</td>
-              <td>324577</td>
-              <td>XII TKJ 2</td>
-              <td><span class="status-sudah">Sudah Dikerjakan</span></td>
-              <td><button class="btn-tandai-belum" onclick="toggleStatus(1, 'sudah')">Tandai Belum</button></td>
-            </tr>
-            <tr>
-              <td>Raden Mas Aris Munandar</td>
-              <td>324577</td>
-              <td>XII TKJ 2</td>
-              <td><span class="status-belum">Belum Dikerjakan</span></td>
-              <td><button class="btn-tandai-sudah" onclick="toggleStatus(2, 'belum')">Tandai Sudah</button></td>
-            </tr>
-          </tbody>
-        </table>
+      @empty
+      <div class="card" style="padding:40px;text-align:center;color:#9aa5c4;">
+        <p style="font-size:15px;font-weight:600;">Belum ada tugas yang dibuat.</p>
+        <a href="{{ route('guru.buat-tugas') }}" style="display:inline-block;margin-top:14px;padding:10px 24px;background:#2d52ff;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:13.5px;">+ Buat Tugas Pertama</a>
       </div>
+      @endforelse
 
     </div>
   </div>
 
   <script>
-    // Edit Tugas
-    function editTugas(btn) {
-      const tugasId = btn.getAttribute('data-tugas-id');
-      window.location.href = `/guru/kelola-tugas/${tugasId}/edit`;
-    }
-
     // Toggle status saat tombol diklik - dengan POST
-    function toggleStatus(pengumpulanId, statusSekarang) {
+    function toggleStatus(pengumpulanId) {
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = `/guru/toggle-status/${pengumpulanId}`;
-      form.innerHTML = `@csrf
-        <input type="hidden" name="_method" value="POST">
-      `;
+      form.innerHTML = `<input type="hidden" name="_token" value="{{ csrf_token() }}">`;
       document.body.appendChild(form);
       form.submit();
     }

@@ -24,6 +24,18 @@ use Illuminate\Support\Facades\Auth;
  */
 class TugasController extends Controller
 {
+    // ─── [SISWA] Daftar tugas milik siswa ──────────────────────
+    public function tugasSiswa()
+    {
+        $siswa = Auth::user();
+        $pengumpulan = \App\Models\Pengumpulan::where('siswa_id', $siswa->id)
+            ->with('tugas')
+            ->latest()
+            ->get();
+
+        return view('siswa.tugas', compact('siswa', 'pengumpulan'));
+    }
+
     // ─── [GURU] Dashboard guru ──────────────────────────────────
     public function dashboardGuru()
     {
@@ -45,18 +57,26 @@ class TugasController extends Controller
     public function dashboardSiswa()
     {
         $siswa = Auth::user();
-        $tugasBelumSelesai = Pengumpulan::where('siswa_id', $siswa->id)
+
+        // Gunakan DB::table() langsung agar tidak terkena auto-pluralisasi Laravel
+        $tugasBelumSelesai = \DB::table('pengumpulan')
+            ->where('siswa_id', $siswa->id)
             ->where('status', 'belum')
-            ->with('tugas')
             ->count();
-        $tugasSelesai = Pengumpulan::where('siswa_id', $siswa->id)
+
+        $tugasSelesai = \DB::table('pengumpulan')
+            ->where('siswa_id', $siswa->id)
             ->where('status', 'sudah')
-            ->with('tugas')
             ->count();
-        $tugasTotal = Pengumpulan::where('siswa_id', $siswa->id)->count();
+
+        $tugasTotal = \DB::table('pengumpulan')
+            ->where('siswa_id', $siswa->id)
+            ->count();
+
         $notifikasiTerbaru = Notifikasi::where('user_id', $siswa->id)
             ->where('dibaca', false)
             ->count();
+
         $tugasRecentLimit = Pengumpulan::where('siswa_id', $siswa->id)
             ->with('tugas')
             ->latest()
@@ -71,7 +91,7 @@ class TugasController extends Controller
     {
         $tugas = Tugas::where('guru_id', Auth::id())
             ->withCount([
-                'pengumpulan',
+                'pengumpulan as pengumpulan_count',
                 'pengumpulan as sudah_count' => fn($q) => $q->where('status', '!=', 'belum'),
             ])
             ->latest()
@@ -102,6 +122,7 @@ class TugasController extends Controller
             'kelas'            => 'required|string|max:50',
             'tgl_pemberian'    => 'required|date',
             'tgl_pengumpulan'  => 'required|date|after_or_equal:tgl_pemberian',
+            'file_tugas'       => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip|max:10240',
         ], [
             'judul.required'           => 'Judul tugas wajib diisi.',
             'mapel.required'           => 'Mata pelajaran wajib dipilih.',
@@ -109,11 +130,30 @@ class TugasController extends Controller
             'tgl_pemberian.required'   => 'Tanggal pemberian wajib diisi.',
             'tgl_pengumpulan.required' => 'Tanggal pengumpulan wajib diisi.',
             'tgl_pengumpulan.after_or_equal' => 'Tanggal pengumpulan harus setelah atau sama dengan tanggal pemberian.',
+            'file_tugas.mimes'         => 'File harus berformat: PDF, Word, Excel, PowerPoint, TXT, atau ZIP.',
+            'file_tugas.max'           => 'Ukuran file maksimal 10MB.',
         ]);
+
+        $filePath = null;
+        $fileOriginalName = null;
+
+        // Handle file upload
+        if ($request->hasFile('file_tugas')) {
+            $file = $request->file('file_tugas');
+            $fileOriginalName = $file->getClientOriginalName();
+            // Simpan file ke folder storage/app/tugas dengan nama yang unik
+            $filePath = $file->storeAs(
+                'tugas',
+                time() . '_' . $fileOriginalName,
+                'public'
+            );
+        }
 
         $tugas = Tugas::create([
             ...$validated,
-            'guru_id' => Auth::id(),
+            'guru_id'           => Auth::id(),
+            'file_path'         => $filePath,
+            'file_original_name' => $fileOriginalName,
         ]);
 
         // Buat record pengumpulan + notifikasi untuk tiap siswa di kelas
@@ -177,10 +217,37 @@ class TugasController extends Controller
             'kelas'           => 'required|string|max:50',
             'tgl_pemberian'   => 'required|date',
             'tgl_pengumpulan' => 'required|date|after_or_equal:tgl_pemberian',
+            'file_tugas'      => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip|max:10240',
+        ], [
+            'file_tugas.mimes' => 'File harus berformat: PDF, Word, Excel, PowerPoint, TXT, atau ZIP.',
+            'file_tugas.max'   => 'Ukuran file maksimal 10MB.',
         ]);
 
+        $filePath = $tugas->file_path;
+        $fileOriginalName = $tugas->file_original_name;
+
+        // Handle file upload jika ada file baru
+        if ($request->hasFile('file_tugas')) {
+            // Hapus file lama jika ada
+            if ($tugas->file_path && \Storage::disk('public')->exists($tugas->file_path)) {
+                \Storage::disk('public')->delete($tugas->file_path);
+            }
+
+            $file = $request->file('file_tugas');
+            $fileOriginalName = $file->getClientOriginalName();
+            $filePath = $file->storeAs(
+                'tugas',
+                time() . '_' . $fileOriginalName,
+                'public'
+            );
+        }
+
         $kelasLama = $tugas->kelas;
-        $tugas->update($validated);
+        $tugas->update([
+            ...$validated,
+            'file_path'         => $filePath,
+            'file_original_name' => $fileOriginalName,
+        ]);
 
         // Jika kelas berubah, buat ulang record pengumpulan
         if ($kelasLama !== $validated['kelas']) {
@@ -223,6 +290,20 @@ class TugasController extends Controller
     public function destroy(Tugas $tugas)
     {
         $this->authorizeGuru($tugas);
+
+        // Hapus file tugas jika ada
+        if ($tugas->file_path && \Storage::disk('public')->exists($tugas->file_path)) {
+            \Storage::disk('public')->delete($tugas->file_path);
+        }
+
+        // Hapus file pengumpulan siswa terkait
+        $pengumpulans = $tugas->pengumpulan;
+        foreach ($pengumpulans as $pengumpulan) {
+            if ($pengumpulan->file_path && \Storage::disk('public')->exists($pengumpulan->file_path)) {
+                \Storage::disk('public')->delete($pengumpulan->file_path);
+            }
+        }
+
         $tugas->delete(); // cascade akan hapus pengumpulan & notifikasi
 
         return redirect()->route('guru.kelola-tugas')
@@ -246,6 +327,172 @@ class TugasController extends Controller
     {
         if ($tugas->guru_id !== Auth::id()) {
             abort(403, 'Akses ditolak. Tugas ini bukan milik Anda.');
+        }
+    }
+
+    // ─── [SISWA] List semua tugas untuk siswa ───────────────────
+    public function listTugasSiswa()
+    {
+        $siswa = Auth::user();
+        $pengumpulans = Pengumpulan::where('siswa_id', $siswa->id)
+            ->with('tugas')
+            ->latest()
+            ->get();
+
+        return view('siswa.tugas', compact('pengumpulans'));
+    }
+
+    // ─── [SISWA] Detail tugas + form pengumpulan ────────────────
+    public function detailTugasSiswa(Tugas $tugas)
+    {
+        $siswa = Auth::user();
+        
+        try {
+            $pengumpulan = Pengumpulan::where('tugas_id', $tugas->id)
+                                       ->where('siswa_id', $siswa->id)
+                                       ->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return back()->with('error', 'Pengumpulan tugas tidak ditemukan untuk siswa ini.');
+        }
+
+        return view('siswa.detail-tugas', compact('tugas', 'pengumpulan'));
+    }
+
+    // ─── [SISWA] Submit/Upload jawaban tugas ────────────────────
+    public function submitTugas(Request $request, Tugas $tugas)
+    {
+        $siswa = Auth::user();
+        $pengumpulan = Pengumpulan::where('tugas_id', $tugas->id)
+                                   ->where('siswa_id', $siswa->id)
+                                   ->firstOrFail();
+
+        $validated = $request->validate([
+            'file_jawaban' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,jpg,jpeg,png|max:10240',
+            'catatan'      => 'nullable|string|max:1000',
+        ], [
+            'file_jawaban.required' => 'File jawaban wajib diupload.',
+            'file_jawaban.mimes'    => 'File harus berformat: PDF, Word, Excel, PowerPoint, TXT, ZIP, atau gambar.',
+            'file_jawaban.max'      => 'Ukuran file maksimal 10MB.',
+        ]);
+
+        try {
+            // Hapus file lama jika ada
+            if ($pengumpulan->file_path && \Storage::disk('public')->exists($pengumpulan->file_path)) {
+                \Storage::disk('public')->delete($pengumpulan->file_path);
+            }
+
+            $file = $request->file('file_jawaban');
+            $fileOriginalName = $file->getClientOriginalName();
+            $filePath = $file->storeAs(
+                'pengumpulan',
+                time() . '_' . $fileOriginalName,
+                'public'
+            );
+
+            $pengumpulan->update([
+                'file_path'         => $filePath,
+                'file_original_name' => $fileOriginalName,
+                'catatan'           => $validated['catatan'] ?? null,
+                'status'            => 'proses',
+                'dikumpulkan_at'    => now(),
+            ]);
+
+            // Kirim notifikasi ke guru
+            Notifikasi::create([
+                'user_id'  => $tugas->guru_id,
+                'tugas_id' => $tugas->id,
+                'judul'    => 'Siswa mengumpulkan tugas: ' . $tugas->judul,
+                'pesan'    => $siswa->name . ' telah mengumpulkan jawaban untuk tugas ' . $tugas->mapel . '.',
+                'tipe'     => 'pengumpulan_siswa',
+            ]);
+
+            return redirect()->route('siswa.detail-tugas', $tugas->id)
+                             ->with('success', 'Tugas berhasil dikumpulkan!');
+        } catch (\Exception $e) {
+            \Log::error('Error saat upload tugas: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengupload file: ' . $e->getMessage());
+        }
+    }
+
+    // ─── [SISWA] Edit/Update pengumpulan (untuk upload ulang) ───
+    public function editPengumpulanSiswa(Tugas $tugas)
+    {
+        $siswa = Auth::user();
+        
+        try {
+            $pengumpulan = Pengumpulan::where('tugas_id', $tugas->id)
+                                       ->where('siswa_id', $siswa->id)
+                                       ->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return back()->with('error', 'Pengumpulan tugas tidak ditemukan untuk siswa ini.');
+        }
+
+        return view('siswa.edit-pengumpulan', compact('tugas', 'pengumpulan'));
+    }
+
+    // ─── [SISWA] Update pengumpulan (edit jawaban) ──────────────
+    public function updatePengumpulanSiswa(Request $request, Tugas $tugas)
+    {
+        $siswa = Auth::user();
+        
+        try {
+            $pengumpulan = Pengumpulan::where('tugas_id', $tugas->id)
+                                       ->where('siswa_id', $siswa->id)
+                                       ->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return back()->with('error', 'Pengumpulan tugas tidak ditemukan untuk siswa ini.');
+        }
+
+        $validated = $request->validate([
+            'file_jawaban' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,jpg,jpeg,png|max:10240',
+            'catatan'      => 'nullable|string|max:1000',
+        ], [
+            'file_jawaban.mimes' => 'File harus berformat: PDF, Word, Excel, PowerPoint, TXT, ZIP, atau gambar.',
+            'file_jawaban.max'   => 'Ukuran file maksimal 10MB.',
+        ]);
+
+        try {
+            $filePath = $pengumpulan->file_path;
+            $fileOriginalName = $pengumpulan->file_original_name;
+
+            // Handle file upload jika ada file baru
+            if ($request->hasFile('file_jawaban')) {
+                // Hapus file lama
+                if ($pengumpulan->file_path && \Storage::disk('public')->exists($pengumpulan->file_path)) {
+                    \Storage::disk('public')->delete($pengumpulan->file_path);
+                }
+
+                $file = $request->file('file_jawaban');
+                $fileOriginalName = $file->getClientOriginalName();
+                $filePath = $file->storeAs(
+                    'pengumpulan',
+                    time() . '_' . $fileOriginalName,
+                    'public'
+                );
+            }
+
+            $pengumpulan->update([
+                'file_path'         => $filePath,
+                'file_original_name' => $fileOriginalName,
+                'catatan'           => $validated['catatan'] ?? $pengumpulan->catatan,
+                'status'            => 'proses',
+                'dikumpulkan_at'    => now(),
+            ]);
+
+            // Kirim notifikasi ke guru tentang update
+            Notifikasi::create([
+                'user_id'  => $tugas->guru_id,
+                'tugas_id' => $tugas->id,
+                'judul'    => 'Siswa mengupdate pengumpulan: ' . $tugas->judul,
+                'pesan'    => $siswa->name . ' telah mengupdate jawaban untuk tugas ' . $tugas->mapel . '.',
+                'tipe'     => 'pengumpulan_update',
+            ]);
+
+            return redirect()->route('siswa.detail-tugas', $tugas->id)
+                             ->with('success', 'Jawaban berhasil diperbarui!');
+        } catch (\Exception $e) {
+            \Log::error('Error saat update pengumpulan: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengupdate file: ' . $e->getMessage());
         }
     }
 }
