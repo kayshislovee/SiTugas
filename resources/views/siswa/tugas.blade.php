@@ -1,384 +1,299 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SITUGAS — Tugas Guru</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SiTugas – Detail Tugas</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --blue:       #2d52ff;
-      --blue-dark:  #1a38cc;
-      --sidebar-w:  210px;
-    }
+  :root {
+    --blue: #2563EB;
+    --blue-dark: #1d4ed8;
+    --blue-light: #eff6ff;
+    --sidebar-w: 210px;
+    --green: #16a34a;
+    --green-bg: #dcfce7;
+    --red: #dc2626;
+    --red-bg: #fee2e2;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --radius: 14px;
+  }
 
-    html, body {
-      height: 100%;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background: #f0f4ff;
-    }
-    body { display: flex; min-height: 100vh; }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--gray-100);
+    min-height: 100vh;
+    display: flex;
+    color: var(--gray-900);
+  }
 
-    /* ══════════════════════════
-       SIDEBAR
-    ══════════════════════════ */
-    .sidebar {
-      width: var(--sidebar-w);
-      min-height: 100vh;
-      background-image: url('/assets/sidebarbg.jpg');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      display: flex;
-      flex-direction: column;
-      padding: 28px 16px 24px;
-      flex-shrink: 0;
-      position: fixed;
-      top: 0; left: 0; bottom: 0;
-      z-index: 100;
-    }
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: linear-gradient(160deg, #1e3a8a 0%, #2563eb 55%, #3b82f6 100%);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 16px 24px;
+    flex-shrink: 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    box-shadow: 4px 0 24px rgba(37,99,235,0.18);
+  }
 
-    /* ── Logo ── */
-    .sidebar-logo {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 18px;
-      padding: 0 6px;
-    }
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding: 0 6px;
+  }
 
-    /*
-      GANTI LOGO ANGSA:
-      Hapus tag <svg class="logo-icon"> di bawah,
-      lalu ganti dengan:
-        <img src="assets/logo-angsa.png" class="logo-icon" style="width:38px;height:38px;object-fit:contain;"/>
-    */
-    .logo-icon {
-      width: 38px;
-      height: 35px;
-      flex-shrink: 0;
-    }
+  .logo-icon {
+    width: 38px;
+    height: 35px;
+    flex-shrink: 0;
+  }
 
-    .brand {
-      
-      font-size: 15px;
-      font-weight: 900;
-      color: #fff;
-      letter-spacing: 1px;
-    }
+  .brand {
+    font-size: 15px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 1px;
+  }
 
-    /* Garis separator di bawah logo */
-    .sidebar-divider {
-      width: 100%;
-      height: 1px;
-      background: rgba(255,255,255,0.28);
-      margin-bottom: 28px;
-    }
+  .sidebar-divider {
+    width: 100%;
+    height: 1px;
+    background: rgba(255,255,255,0.28);
+    margin-bottom: 28px;
+  }
 
-    /* ── Nav items ── */
-    .nav-menu {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      width: 100%;
-    }
+  .nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+  }
 
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      padding: 11px 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      color: rgba(255,255,255,0.75);
-      font-size: 14px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    .nav-item svg {
-      width: 19px; height: 19px;
-      flex-shrink: 0;
-      stroke: rgba(255,255,255,0.75);
-      fill: none;
-      transition: stroke 0.2s;
-    }
-    .nav-item:hover {
-      background: rgba(255,255,255,0.13);
-      color: #fff;
-    }
-    .nav-item:hover svg { stroke: #fff; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.75);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-item svg {
+    width: 19px; height: 19px;
+    flex-shrink: 0;
+    stroke: rgba(255,255,255,0.75);
+    fill: none;
+    transition: stroke 0.2s;
+  }
+  .nav-item:hover {
+    background: rgba(255,255,255,0.13);
+    color: #fff;
+  }
+  .nav-item:hover svg { stroke: #fff; }
 
-    /* Active: background putih, teks biru */
-    .nav-item.active {
-      background: #fff;
-      color: var(--blue);
-      font-weight: 700;
-      border-left: none;
-      padding-left: 16px;
-    }
-    .nav-item.active svg {
-      stroke: var(--blue);
-    }
+  .nav-item.active {
+    background: #fff;
+    color: var(--blue);
+    font-weight: 700;
+  }
+  .nav-item.active svg {
+    stroke: var(--blue);
+  }
 
-    /* ══════════════════════════
-       MAIN
-    ══════════════════════════ */
-    .main {
-      margin-left: var(--sidebar-w);
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
+  /* ─── MAIN CONTENT ─── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    padding: 36px 36px 36px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-height: 100vh;
+  }
 
-    /* Topbar */
-    .topbar {
-      height: 64px;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding: 0 36px;
-      border-bottom: 1px solid #e4eaf5;
-      position: sticky;
-      top: 0;
-      z-index: 50;
-    }
+  /* ─── CARD ─── */
+  .card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    padding: 28px 32px;
+  }
 
-    .btn-buat {
-      padding: 11px 26px;
-      background: var(--blue);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 700;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      letter-spacing: 0.3px;
-      transition: background 0.2s, transform 0.15s;
-    }
-    .btn-buat:hover { background: var(--blue-dark); }
-    .btn-buat:active { transform: scale(0.97); }
+  /* ─── DETAIL TUGAS ─── */
+  .tugas-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--gray-900);
+    margin-bottom: 6px;
+  }
 
-    /* Content */
-    .content {
-      flex: 1;
-      padding: 32px 36px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
+  .tugas-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
 
-    /* ══════════════════════════
-       CARD UMUM
-    ══════════════════════════ */
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 2px 16px rgba(45,82,255,0.06);
-      overflow: hidden;
-    }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  .badge-mapel {
+    background: var(--gray-100);
+    color: var(--gray-700);
+  }
+  .badge-kelas {
+    background: #dbeafe;
+    color: var(--blue);
+  }
+  .badge-deadline {
+    background: #fef9c3;
+    color: #a16207;
+  }
 
-    /* ── Card Judul Tugas ── */
-    .tugas-header {
-      padding: 20px 28px 16px;
-    }
-    .tugas-header h2 {
-      font-size: 18px;
-      font-weight: 700;
-      color: #1a2060;
-      margin-bottom: 10px;
-    }
-    .tugas-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .tugas-meta .meta-plain {
-      font-size: 13px;
-      color: #555;
-      font-weight: 500;
-    }
-    .badge {
-      display: inline-block;
-      padding: 3px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .badge-blue  { background: #e0e8ff; color: #2d52ff; }
-    .badge-red   { background: #ffe5e5; color: #e05252; }
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--gray-200);
+    margin: 0 0 20px 0;
+  }
 
-    .tugas-header-row {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      padding: 20px 28px 0;
-    }
+  .tugas-desc {
+    font-size: 14.5px;
+    color: var(--gray-700);
+    line-height: 1.7;
+  }
 
-    .btn-edit {
-      padding: 9px 22px;
-      border: 1.5px solid #dde3f0;
-      border-radius: 8px;
-      background: #fff;
-      color: #333;
-      font-size: 13px;
-      font-weight: 600;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .btn-edit:hover { background: #f5f7ff; border-color: #aabbdd; }
+  /* ─── DAFTAR PENGUMPULAN ─── */
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
 
-    .tugas-divider {
-      border: none;
-      border-top: 1px solid #eef1f8;
-      margin: 16px 28px 0;
-    }
+  .table-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
 
-    .tugas-desc {
-      padding: 18px 28px 28px;
-      font-size: 13px;
-      color: #667;
-      line-height: 1.7;
-      min-height: 90px;
-    }
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--gray-50);
+    border: 1.5px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    color: var(--gray-400);
+    cursor: text;
+    transition: border 0.2s;
+  }
+  .search-box:hover { border-color: var(--blue); }
+  .search-box svg {
+    width: 15px; height: 15px;
+    stroke: var(--gray-400);
+    flex-shrink: 0;
+  }
 
-    /* ── Card Daftar Pengumpulan ── */
-    .pengumpulan-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 24px 14px;
-      border-bottom: 1px solid #f0f2f8;
-    }
-    .pengumpulan-header h3 {
-      font-size: 15px;
-      font-weight: 700;
-      color: #1a2060;
-    }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
 
-    .search-box {
-      padding: 8px 16px;
-      border: 1.5px solid #e4eaf5;
-      border-radius: 999px;
-      font-size: 12px;
-      color: #555;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background: #f7f9ff;
-      outline: none;
-      width: 200px;
-      transition: border-color 0.2s;
-    }
-    .search-box:focus { border-color: var(--blue); }
-    .search-box::placeholder { color: #aaa; }
+  thead tr {
+    border-bottom: 2px solid var(--gray-100);
+  }
 
-    /* Table */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    thead tr {
-      background: #f5f7ff;
-    }
-    thead th {
-      padding: 12px 20px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      color: #8899bb;
-      text-align: left;
-    }
-    tbody tr {
-      border-top: 1px solid #f0f2f8;
-      transition: background 0.15s;
-    }
-    tbody tr:hover { background: #f8faff; }
-    tbody td {
-      padding: 14px 20px;
-      font-size: 13px;
-      color: #333;
-      font-weight: 500;
-    }
+  th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gray-500);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 10px 14px;
+  }
 
-    /* Status badges */
-    .status-sudah {
-      display: inline-block;
-      padding: 5px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-      background: transparent;
-      border: 1.5px solid #22c08a;
-      color: #22c08a;
-    }
-    .status-belum {
-      display: inline-block;
-      padding: 5px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-      background: transparent;
-      border: 1.5px solid #ccd0dd;
-      color: #555;
-    }
+  td {
+    padding: 14px 14px;
+    font-size: 13.5px;
+    color: var(--gray-700);
+    border-bottom: 1px solid var(--gray-100);
+    font-weight: 500;
+  }
 
-    /* Aksi buttons */
-    .btn-tandai-belum {
-      padding: 7px 18px;
-      border: 1.5px solid var(--blue);
-      border-radius: 8px;
-      background: #fff;
-      color: var(--blue);
-      font-size: 12px;
-      font-weight: 700;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .btn-tandai-belum:hover { background: #eef1ff; }
+  tbody tr:last-child td { border-bottom: none; }
 
-    .btn-tandai-sudah {
-      padding: 7px 18px;
-      border: none;
-      border-radius: 8px;
-      background: var(--blue);
-      color: #fff;
-      font-size: 12px;
-      font-weight: 700;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .btn-tandai-sudah:hover { background: var(--blue-dark); }
-  </style>
+  tbody tr:hover td { background: var(--gray-50); }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+  .status-done {
+    background: var(--green-bg);
+    color: var(--green);
+  }
+  .status-pending {
+    background: var(--gray-100);
+    color: var(--gray-500);
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-done .status-dot { background: var(--green); }
+  .status-pending .status-dot { background: var(--gray-400); }
+</style>
 </head>
 <body>
 
-  <!-- ══ SIDEBAR ══ -->
-  <aside class="sidebar">
-
+<aside class="sidebar">
     <div class="sidebar-logo">
       <img src="{{ asset('assets/logo.png') }}" class="logo-icon" alt="Logo"/>
       <span class="brand">SITUGAS</span>
     </div>
 
-    <!-- Separator -->
     <div class="sidebar-divider"></div>
 
-    <!-- Nav -->
     <nav class="nav-menu">
-      <a href="/guru/dashboard" class="nav-item">
+      <a href="/siswa/dashboard" class="nav-item">
         <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="7" height="7" rx="1.2"/>
           <rect x="14" y="3" width="7" height="7" rx="1.2"/>
@@ -388,7 +303,7 @@
         Dashboard
       </a>
 
-      <a href="/guru/kelola-tugas" class="nav-item active">
+      <a href="/siswa/tugas" class="nav-item active">
         <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 11l3 3L22 4"/>
           <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
@@ -396,7 +311,7 @@
         Tugas
       </a>
 
-      <a href="/guru/notifikasi" class="nav-item">
+      <a href="/siswa/notifikasi" class="nav-item">
         <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -404,111 +319,70 @@
         Notifikasi
       </a>
     </nav>
-
   </aside>
 
-  <!-- ══ MAIN ══ -->
-  <div class="main">
 
-    <!-- Topbar -->
-    <header class="topbar">
-      <a href="/guru/buat-tugas" class="btn-buat" style="text-decoration:none;">Buat Tugas</a>
-    </header>
+<!-- MAIN -->
+<main class="main">
 
-    <!-- Content -->
-    <div class="content">
-
-      <!-- Card Info Tugas -->
-      <div class="card">
-        <div class="tugas-header-row">
-          <div class="tugas-header" style="padding:0; flex:1;">
-            <h2>Judul Tugas</h2>
-            <div class="tugas-meta">
-              <span class="meta-plain">Mapel</span>
-              <span class="badge badge-blue">Kelas</span>
-              <span class="badge badge-red">Tanggal Tugas</span>
-            </div>
-          </div>
-          <button class="btn-edit">Edit Tugas</button>
-        </div>
-
-        <hr class="tugas-divider"/>
-
-        <div class="tugas-desc">
-          Deskripsi Tugas
-        </div>
-      </div>
-
-      <!-- Card Daftar Pengumpulan -->
-      <div class="card">
-        <div class="pengumpulan-header">
-          <h3>Daftar Pengumpulan</h3>
-          <input class="search-box" type="text" placeholder="Cari nama murid..."/>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Nama Siswa</th>
-              <th>NIS</th>
-              <th>Kelas</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Raden Mas Aris Munandar</td>
-              <td>324577</td>
-              <td>XII TKJ 2</td>
-              <td><span class="status-sudah">Sudah Dikerjakan</span></td>
-              <td><button class="btn-tandai-belum">Tandai Belum</button></td>
-            </tr>
-            <tr>
-              <td>Raden Mas Aris Munandar</td>
-              <td>324577</td>
-              <td>XII TKJ 2</td>
-              <td><span class="status-belum">Belum Dikerjakan</span></td>
-              <td><button class="btn-tandai-sudah">Tandai Sudah</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
+  <!-- Card: Detail Tugas -->
+  <div class="card">
+    <h1 class="tugas-title">Trigonometri Lanjutan</h1>
+    <div class="tugas-meta">
+      <span class="badge badge-mapel">Matematika</span>
+      <span class="badge badge-kelas">XI RPL 2</span>
+      <span class="badge badge-deadline">26 Mei 2025</span>
     </div>
+    <div class="divider"></div>
+    <p class="tugas-desc">Kerjakan latihan soal halaman 120–125 di buku paket Matematika Peminatan.</p>
   </div>
 
-  <script>
-    // Toggle status saat tombol diklik
-    document.querySelectorAll('.btn-tandai-belum').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const row = this.closest('tr');
-        row.querySelector('td:nth-child(4)').innerHTML = '<span class="status-belum">Belum Dikerjakan</span>';
-        this.outerHTML = '<button class="btn-tandai-sudah">Tandai Sudah</button>';
-        rebindButtons();
-      });
-    });
+  <!-- Card: Daftar Pengumpulan -->
+  <div class="card">
+    <div class="table-header">
+      <span class="table-title">Daftar Pengumpulan</span>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Cari nama murid...
+      </div>
+    </div>
 
-    function rebindButtons() {
-      document.querySelectorAll('.btn-tandai-sudah').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const row = this.closest('tr');
-          row.querySelector('td:nth-child(4)').innerHTML = '<span class="status-sudah">Sudah Dikerjakan</span>';
-          this.outerHTML = '<button class="btn-tandai-belum">Tandai Belum</button>';
-          rebindButtons();
-        });
-      });
-      document.querySelectorAll('.btn-tandai-belum').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const row = this.closest('tr');
-          row.querySelector('td:nth-child(4)').innerHTML = '<span class="status-belum">Belum Dikerjakan</span>';
-          this.outerHTML = '<button class="btn-tandai-sudah">Tandai Sudah</button>';
-          rebindButtons();
-        });
-      });
-    }
-    rebindButtons();
-  </script>
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Siswa</th>
+          <th>NIS</th>
+          <th>Kelas</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Raden Mas Aris Munandar</td>
+          <td>324577</td>
+          <td>XII TKJ 2</td>
+          <td>
+            <span class="status-badge status-done">
+              <span class="status-dot"></span>
+              Sudah Dikerjakan
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>Raden Mas Aris Munandar</td>
+          <td>324577</td>
+          <td>XII TKJ 2</td>
+          <td>
+            <span class="status-badge status-pending">
+              <span class="status-dot"></span>
+              Belum Dikerjakan
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
+</main>
 </body>
 </html>
