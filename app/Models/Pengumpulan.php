@@ -23,6 +23,10 @@ class Pengumpulan extends Model
         'catatan',
     ];
 
+    protected $casts = [
+        'dikumpulkan_at' => 'datetime',
+    ];
+
     public function tugas()
     {
         return $this->belongsTo(Tugas::class, 'tugas_id');

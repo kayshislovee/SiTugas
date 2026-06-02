@@ -660,7 +660,7 @@
 
           @if($pengumpulan->status !== 'belum')
             <div class="submitted-info">
-              ✓ Jawaban Anda telah dikumpulkan pada {{ $pengumpulan->dikumpulkan_at->format('d M Y H:i') }}.
+              ✓ Jawaban Anda telah dikumpulkan pada {{ optional($pengumpulan->dikumpulkan_at)->format('d M Y H:i') ?? '-' }}.
               <a href="{{ route('siswa.edit-pengumpulan', $tugas->id) }}" class="edit-link">
                 Edit Jawaban →
               </a>
