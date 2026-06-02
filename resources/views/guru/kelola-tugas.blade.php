@@ -455,7 +455,7 @@
             <div class="tugas-meta">
               <span class="meta-plain">{{ $t->mapel }}</span>
               <span class="badge badge-blue">{{ $t->kelas }}</span>
-              <span class="badge badge-red">Deadline: {{ $t->tgl_pengumpulan->format('d M Y') }}</span>
+              <span class="badge badge-red">Deadline: {{ \App\Helpers\DateHelper::safeFormat($t->tgl_pengumpulan, 'd M Y') }}</span>
               <span class="badge" style="background:#fef9c3;color:#854d0e;">
                 {{ $t->sudah_count ?? 0 }}/{{ $t->pengumpulan_count }} dikumpulkan
               </span>

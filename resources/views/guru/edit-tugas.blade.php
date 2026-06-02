@@ -450,11 +450,11 @@
             <div class="row-2">
               <div class="field">
                 <label>Tanggal Pemberian</label>
-                <input type="date" name="tgl_pemberian" value="{{ $tugas->tgl_pemberian->format('Y-m-d') }}" required/>
+                <input type="date" name="tgl_pemberian" value="{{ \App\Helpers\DateHelper::safeFormat($tugas->tgl_pemberian, 'Y-m-d') }}" required/>
               </div>
               <div class="field">
                 <label>Tanggal Pengumpulan</label>
-                <input type="date" name="tgl_pengumpulan" value="{{ $tugas->tgl_pengumpulan->format('Y-m-d') }}" required/>
+                <input type="date" name="tgl_pengumpulan" value="{{ \App\Helpers\DateHelper::safeFormat($tugas->tgl_pengumpulan, 'Y-m-d') }}" required/>
               </div>
             </div>
 

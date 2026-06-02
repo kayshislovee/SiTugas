@@ -473,6 +473,29 @@
 
           <hr class="form-divider"/>
 
+          @if($errors->any())
+            <div style="background:#fee2e2; border:1px solid #fecaca; border-radius:10px; padding:16px; margin-bottom:20px; color:#991b1b; font-size:13px;">
+              <strong>⚠️ Error:</strong>
+              <ul style="margin:8px 0 0 20px;">
+                @foreach($errors->all() as $error)
+                  <li>{{ $error }}</li>
+                @endforeach
+              </ul>
+            </div>
+          @endif
+
+          @if(session('error'))
+            <div style="background:#fee2e2; border:1px solid #fecaca; border-radius:10px; padding:16px; margin-bottom:20px; color:#991b1b; font-size:13px;">
+              <strong>⚠️ Error:</strong> {{ session('error') }}
+            </div>
+          @endif
+
+          @if(session('success'))
+            <div style="background:#dcfce7; border:1px solid #86efac; border-radius:10px; padding:16px; margin-bottom:20px; color:#166534; font-size:13px;">
+              <strong>✓ Berhasil:</strong> {{ session('success') }}
+            </div>
+          @endif
+
           <form method="POST" action="{{ route('siswa.update-pengumpulan', $tugas->id) }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')

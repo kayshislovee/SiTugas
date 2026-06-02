@@ -419,32 +419,46 @@
     <div class="content">
 
       @forelse($pengumpulan as $p)
-      <!-- Card Info Tugas -->
-      <div class="card">
-        <div class="tugas-header-row">
-          <div class="tugas-header" style="padding:0; flex:1;">
-            <h2>{{ $p->tugas->judul }}</h2>
-            <div class="tugas-meta">
-              <span class="meta-plain">{{ $p->tugas->mapel }}</span>
-              <span class="badge badge-blue">{{ $p->tugas->kelas }}</span>
-              <span class="badge badge-red">Deadline: {{ $p->tugas->tgl_pengumpulan->format('d M Y') }}</span>
-              @if($p->status === 'sudah')
-                <span class="badge" style="background:#dcfce7;color:#166534;">✓ Sudah Dikumpulkan</span>
-              @elseif($p->tugas->isExpired())
-                <span class="badge" style="background:#fee2e2;color:#991b1b;">Terlambat</span>
-              @else
-                <span class="badge" style="background:#fef9c3;color:#854d0e;">Belum Dikumpulkan</span>
-              @endif
+        @if($p->tugas)
+        <!-- Card Info Tugas -->
+        <div class="card">
+          <div class="tugas-header-row">
+            <div class="tugas-header" style="padding:0; flex:1;">
+              <h2>{{ $p->tugas->judul }}</h2>
+              <div class="tugas-meta">
+                <span class="meta-plain">{{ $p->tugas->mapel }}</span>
+                <span class="badge badge-blue">{{ $p->tugas->kelas }}</span>
+              <span class="badge badge-red">Deadline: {{ \App\Helpers\DateHelper::safeFormat($p->tugas->tgl_pengumpulan, 'd M Y') }}</span>
+                @if($p->status === 'sudah')
+                  <span class="badge" style="background:#dcfce7;color:#166534;">✓ Sudah Dikumpulkan</span>
+                @elseif($p->tugas && $p->tugas->isExpired())
+                  <span class="badge" style="background:#fee2e2;color:#991b1b;">Terlambat</span>
+                @else
+                  <span class="badge" style="background:#fef9c3;color:#854d0e;">Belum Dikumpulkan</span>
+                @endif
+              </div>
             </div>
           </div>
-        </div>
 
-        <hr class="tugas-divider"/>
+          <hr class="tugas-divider"/>
 
-        <div class="tugas-desc">
-          {{ $p->tugas->deskripsi ?? '(Tidak ada deskripsi)' }}
+          <div class="tugas-desc">
+            {{ $p->tugas->deskripsi ?? '(Tidak ada deskripsi)' }}
+          </div>
+
+          <div style="margin-top:20px;">
+            <a href="{{ route('siswa.detail-tugas', $p->tugas->id) }}" style="display:inline-block;padding:10px 20px;background:#2d52ff;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;transition:all 0.2s;">
+              Lihat Detail & Kumpulkan →
+            </a>
+          </div>
         </div>
-      </div>
+        @else
+        <!-- Card: Tugas Tidak Ditemukan -->
+        <div class="card" style="background:#fee2e2; border:1px solid #fecaca;">
+          <p style="color:#991b1b; font-weight:600;">⚠️ Tugas tidak ditemukan</p>
+          <p style="color:#991b1b; font-size:13px; margin-top:6px;">Tugas ini mungkin telah dihapus oleh guru.</p>
+        </div>
+        @endif
       @empty
       <div class="card" style="padding:40px;text-align:center;color:#9aa5c4;">
         <p style="font-size:15px;font-weight:600;">Belum ada tugas untukmu saat ini.</p>

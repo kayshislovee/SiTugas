@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Pengumpulan extends Model
 {
     use HasFactory;
+    
+    // Sesuaikan nama tabel jika perlu
+    protected $table = 'pengumpulan'; 
 
-    protected $table = 'pengumpulan';
-
+    // Sesuaikan dengan kolom yang ada di database kamu
     protected $fillable = [
         'tugas_id',
         'siswa_id',
@@ -21,26 +23,13 @@ class Pengumpulan extends Model
         'catatan',
     ];
 
-    protected $casts = [
-        'dikumpulkan_at' => 'datetime',
-    ];
-
-    // ─── Relasi ─────────────────────────────────────────────────
-
     public function tugas()
     {
         return $this->belongsTo(Tugas::class, 'tugas_id');
     }
 
-    public function siswa()
+    public function user() // atau siswa()
     {
         return $this->belongsTo(User::class, 'siswa_id');
-    }
-
-    // ─── Helper ─────────────────────────────────────────────────
-
-    public function sudah(): bool
-    {
-        return $this->status !== 'belum';
     }
 }

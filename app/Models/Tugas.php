@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
+use Carbon\Carbon; // Pastikan Carbon di-import
 
 class Tugas extends Model
 {
@@ -26,6 +26,17 @@ class Tugas extends Model
         'tgl_pemberian'    => 'date',
         'tgl_pengumpulan'  => 'date',
     ];
+
+    // ─── Accessors untuk memastikan dates selalu sebagai Carbon ─
+    public function getTglPemberianAttribute($value)
+    {
+        return $value instanceof \Carbon\Carbon ? $value : \Carbon\Carbon::parse($value);
+    }
+
+    public function getTglPengumpulanAttribute($value)
+    {
+        return $value instanceof \Carbon\Carbon ? $value : \Carbon\Carbon::parse($value);
+    }
 
     // ─── Relasi ─────────────────────────────────────────────────
 
@@ -52,8 +63,12 @@ class Tugas extends Model
      */
     public function getSisaHariAttribute(): int
     {
+        $tgl = $this->tgl_pengumpulan instanceof \Carbon\Carbon 
+            ? $this->tgl_pengumpulan 
+            : \Carbon\Carbon::parse($this->tgl_pengumpulan);
+        
         return (int) now()->startOfDay()->diffInDays(
-            $this->tgl_pengumpulan->startOfDay(),
+            $tgl->startOfDay(),
             false
         );
     }
@@ -70,5 +85,17 @@ class Tugas extends Model
         if ($sisa === 1) return 'Besok';
 
         return $sisa . ' hari lagi';
+    }
+
+    /**
+     * Mengecek apakah tugas sudah melewati batas waktu (expired)
+     */
+    public function isExpired(): bool
+    {
+        if (!$this->tgl_pengumpulan) {
+            return false;
+        }
+
+        return $this->sisa_hari < 0;
     }
 }

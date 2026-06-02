@@ -571,17 +571,24 @@
 
       <!-- Left: Task Detail -->
       <div class="task-detail">
+        @if(!$tugas)
+          <div style="background:#fee2e2; border:1px solid #fecaca; border-radius:10px; padding:20px; text-align:center; color:#991b1b;">
+            <p style="font-weight:600;">⚠️ Tugas tidak ditemukan</p>
+            <p style="font-size:13px; margin-top:6px;">Tugas ini mungkin telah dihapus oleh guru.</p>
+            <a href="{{ route('siswa.tugas') }}" style="margin-top:12px; display:inline-block; color:#2d52ff; font-weight:600;">← Kembali ke daftar tugas</a>
+          </div>
+        @else
         <div class="detail-header">
           <div class="detail-subject">{{ $tugas->mapel }}</div>
           <div class="detail-title">{{ $tugas->judul }}</div>
           <div class="detail-meta">
             <div class="detail-meta-item">
               <span class="detail-meta-label">Diberikan Tanggal</span>
-              <span>{{ $tugas->tgl_pemberian->format('d M Y') }}</span>
+              <span>{{ \App\Helpers\DateHelper::safeFormat($tugas->tgl_pemberian, 'd M Y') }}</span>
             </div>
             <div class="detail-meta-item">
               <span class="detail-meta-label">Batas Pengumpulan</span>
-              <span>{{ $tugas->tgl_pengumpulan->format('d M Y') }}</span>
+              <span>{{ \App\Helpers\DateHelper::safeFormat($tugas->tgl_pengumpulan, 'd M Y') }}</span>
             </div>
           </div>
         </div>
@@ -603,6 +610,7 @@
               </a>
             </div>
           </div>
+        @endif
         @endif
       </div>
 
@@ -626,6 +634,29 @@
           </div>
 
           <hr class="form-divider"/>
+
+          @if($errors->any())
+            <div style="background:#fee2e2; border:1px solid #fecaca; border-radius:10px; padding:16px; margin-bottom:20px; color:#991b1b; font-size:13px;">
+              <strong>⚠️ Error:</strong>
+              <ul style="margin:8px 0 0 20px;">
+                @foreach($errors->all() as $error)
+                  <li>{{ $error }}</li>
+                @endforeach
+              </ul>
+            </div>
+          @endif
+
+          @if(session('error'))
+            <div style="background:#fee2e2; border:1px solid #fecaca; border-radius:10px; padding:16px; margin-bottom:20px; color:#991b1b; font-size:13px;">
+              <strong>⚠️ Error:</strong> {{ session('error') }}
+            </div>
+          @endif
+
+          @if(session('success'))
+            <div style="background:#dcfce7; border:1px solid #86efac; border-radius:10px; padding:16px; margin-bottom:20px; color:#166534; font-size:13px;">
+              <strong>✓ Berhasil:</strong> {{ session('success') }}
+            </div>
+          @endif
 
           @if($pengumpulan->status !== 'belum')
             <div class="submitted-info">
