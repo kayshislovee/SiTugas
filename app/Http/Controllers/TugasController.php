@@ -58,32 +58,54 @@ class TugasController extends Controller
     {
         $siswa = Auth::user();
 
-        // Gunakan DB::table() langsung agar tidak terkena auto-pluralisasi Laravel
-        $tugasBelumSelesai = \DB::table('pengumpulan')
-            ->where('siswa_id', $siswa->id)
-            ->where('status', 'belum')
-            ->count();
+        // Ambil semua pengumpulan siswa beserta relasi tugas sekaligus
+        $semuaPengumpulan = Pengumpulan::where('siswa_id', $siswa->id)
+            ->with('tugas')
+            ->get();
 
-        $tugasSelesai = \DB::table('pengumpulan')
-            ->where('siswa_id', $siswa->id)
-            ->where('status', 'sudah')
-            ->count();
+        $tugasTotal        = $semuaPengumpulan->count();
+        $tugasBelumSelesai = $semuaPengumpulan->where('status', 'belum')->count();
+        $tugasSelesai      = $semuaPengumpulan->where('status', 'sudah')->count();
 
-        $tugasTotal = \DB::table('pengumpulan')
-            ->where('siswa_id', $siswa->id)
-            ->count();
+        // Tugas yang deadline-nya sudah lewat DAN belum dikumpulkan
+        $tugasTerlambat = $semuaPengumpulan->filter(function ($p) {
+            return $p->status === 'belum'
+                && $p->tugas
+                && \Carbon\Carbon::parse($p->tugas->tgl_pengumpulan)->isPast();
+        })->count();
+
+        // Tugas yang deadline-nya dalam 3 hari ke depan (belum/proses)
+        $tugasSegera = $semuaPengumpulan->filter(function ($p) {
+            return in_array($p->status, ['belum', 'proses'])
+                && $p->tugas
+                && \Carbon\Carbon::parse($p->tugas->tgl_pengumpulan)->isFuture()
+                && \Carbon\Carbon::parse($p->tugas->tgl_pengumpulan)->diffInDays(now()) <= 3;
+        })->count();
 
         $notifikasiTerbaru = Notifikasi::where('user_id', $siswa->id)
             ->where('dibaca', false)
             ->count();
 
+        // 5 tugas terbaru — urutkan berdasarkan deadline terdekat
         $tugasRecentLimit = Pengumpulan::where('siswa_id', $siswa->id)
             ->with('tugas')
-            ->latest()
+            ->get()
+            ->sortBy(function ($p) {
+                return optional($p->tugas)->tgl_pengumpulan;
+            })
             ->take(5)
-            ->get();
+            ->values();
 
-        return view('siswa.dashboard', compact('siswa', 'tugasBelumSelesai', 'tugasSelesai', 'tugasTotal', 'notifikasiTerbaru', 'tugasRecentLimit'));
+        return view('siswa.dashboard', compact(
+            'siswa',
+            'tugasBelumSelesai',
+            'tugasSelesai',
+            'tugasTotal',
+            'tugasTerlambat',
+            'tugasSegera',
+            'notifikasiTerbaru',
+            'tugasRecentLimit'
+        ));
     }
 
     // ─── [GURU] Daftar semua tugas milik guru ───────────────────
