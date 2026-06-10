@@ -116,6 +116,7 @@
   </form>
 
   <a href="{{ route('login') }}" class="link-siswa">Login Sebagai Murid</a>
+  <a href="{{ route('login.superadmin') }}" class="link-siswa">Login Sebagai Admin</a>
 </div>
 
 </body>

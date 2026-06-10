@@ -1,0 +1,53 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        // 1. Tambah superadmin ke enum role users
+        \DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('siswa','guru','superadmin') NOT NULL");
+
+        // 2. Tambah kolom file ke tugas (jika belum ada)
+        if (!Schema::hasColumn('tugas', 'file_path')) {
+            Schema::table('tugas', function (Blueprint $table) {
+                $table->string('file_path', 500)->nullable()->after('tgl_pengumpulan');
+                $table->string('file_original_name')->nullable()->after('file_path');
+            });
+        }
+
+        // 3. Tambah kolom ke pengumpulan
+        Schema::table('pengumpulan', function (Blueprint $table) {
+            // Modify enum status
+            \DB::statement("ALTER TABLE pengumpulan MODIFY COLUMN status ENUM('belum','proses','sudah','terlambat') NOT NULL DEFAULT 'belum'");
+
+            if (!Schema::hasColumn('pengumpulan', 'file_path')) {
+                $table->string('file_path', 500)->nullable()->after('dikumpulkan_at');
+            }
+            if (!Schema::hasColumn('pengumpulan', 'file_original_name')) {
+                $table->string('file_original_name')->nullable()->after('file_path');
+            }
+            if (!Schema::hasColumn('pengumpulan', 'catatan')) {
+                $table->text('catatan')->nullable()->after('file_original_name');
+            }
+            if (!Schema::hasColumn('pengumpulan', 'nilai')) {
+                $table->unsignedTinyInteger('nilai')->nullable()->after('catatan');
+            }
+            if (!Schema::hasColumn('pengumpulan', 'feedback_guru')) {
+                $table->text('feedback_guru')->nullable()->after('nilai');
+            }
+        });
+
+        // 4. Update enum notifikasi tipe
+        \DB::statement("ALTER TABLE notifikasi MODIFY COLUMN tipe ENUM('tugas_baru','deadline','diperbarui','nilai','pengumpulan_siswa','pengumpulan_update') NOT NULL DEFAULT 'tugas_baru'");
+    }
+
+    public function down(): void
+    {
+        \DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('siswa','guru') NOT NULL");
+        \DB::statement("ALTER TABLE notifikasi MODIFY COLUMN tipe ENUM('tugas_baru','deadline','diperbarui','nilai') NOT NULL DEFAULT 'tugas_baru'");
+    }
+};

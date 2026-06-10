@@ -436,12 +436,13 @@
                 <div class="select-wrap">
                   <select name="kelas" required>
                     <option value="" disabled>Pilih Kelas</option>
-                    <option value="X-A" {{ $tugas->kelas === 'X-A' ? 'selected' : '' }}>X-A</option>
-                    <option value="X-B" {{ $tugas->kelas === 'X-B' ? 'selected' : '' }}>X-B</option>
-                    <option value="XI-A" {{ $tugas->kelas === 'XI-A' ? 'selected' : '' }}>XI-A</option>
-                    <option value="XI-B" {{ $tugas->kelas === 'XI-B' ? 'selected' : '' }}>XI-B</option>
-                    <option value="XII-A" {{ $tugas->kelas === 'XII-A' ? 'selected' : '' }}>XII-A</option>
-                    <option value="XII-B" {{ $tugas->kelas === 'XII-B' ? 'selected' : '' }}>XII-B</option>
+                    @foreach($kelasList as $kelas)
+                      <option value="{{ $kelas }}" {{ $tugas->kelas === $kelas ? 'selected' : '' }}>{{ $kelas }}</option>
+                    @endforeach
+                    {{-- Jaga-jaga jika kelas lama tidak ada di list --}}
+                    @if(!$kelasList->contains($tugas->kelas))
+                      <option value="{{ $tugas->kelas }}" selected>{{ $tugas->kelas }} (kelas lama)</option>
+                    @endif
                   </select>
                 </div>
               </div>

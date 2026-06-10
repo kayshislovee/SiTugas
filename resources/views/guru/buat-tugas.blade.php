@@ -526,12 +526,12 @@
               <div class="select-wrap">
                 <select name="kelas" required>
                   <option value="" disabled selected>Pilih Kelas</option>
-                  <option>X-A</option>
-                  <option>X-B</option>
-                  <option>XI-A</option>
-                  <option>XI-B</option>
-                  <option>XII-A</option>
-                  <option>XII-B</option>
+                  @foreach($kelasList as $kelas)
+                    <option value="{{ $kelas }}" {{ old('kelas') == $kelas ? 'selected' : '' }}>{{ $kelas }}</option>
+                  @endforeach
+                  @if($kelasList->isEmpty())
+                    <option disabled>Belum ada siswa terdaftar</option>
+                  @endif
                 </select>
               </div>
             </div>

@@ -239,6 +239,36 @@
     }
     .btn-edit:hover { background: #f5f7ff; border-color: #aabbdd; }
 
+    .action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1.5px solid #dde3f0;
+      background: #fff;
+      color: #2d52ff;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+    .icon-btn:hover {
+      background: #eef1ff;
+      border-color: #aabbdd;
+      transform: translateY(-1px);
+    }
+    .icon-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      stroke: none;
+    }
+
     .tugas-divider {
       border: none;
       border-top: 1px solid #eef1f8;
@@ -461,7 +491,12 @@
               </span>
             </div>
           </div>
-          <a href="{{ route('guru.edit-tugas', $t->id) }}" class="btn-edit">Edit Tugas</a>
+          <div class="action-buttons">
+            <a href="{{ route('guru.edit-tugas', $t->id) }}" class="btn-edit">Edit Tugas</a>
+            <a href="{{ route('guru.show-tugas', $t->id) }}" class="icon-btn" title="Lihat detail tugas">
+              <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </a>
+          </div>
         </div>
 
         <hr class="tugas-divider"/>

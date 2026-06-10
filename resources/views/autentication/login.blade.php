@@ -118,6 +118,7 @@
   </form>
 
   <a href="{{ route('login.guru') }}" class="link-guru">Login Sebagai Guru</a>
+  <a href="{{ route('login.superadmin') }}" class="link-guru">Login Sebagai Admin</a>
 </div>
 
 </body>

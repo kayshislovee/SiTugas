@@ -7,13 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
-/**
- * PERBAIKAN LOGIN GURU:
- *
- * Bug sebelumnya: tidak ada kolom 'nip' di tabel users (hanya 'email'),
- * dan model User tidak menyertakan 'nis'/'nip'/'kelas' di $fillable.
- * Solusi: tambahkan kolom di migrasi + perbaiki model User.
- */
 class AuthController extends Controller
 {
     // ─── Tampilkan form login siswa ──────────────────────────────
@@ -28,6 +21,12 @@ class AuthController extends Controller
         return view('autentication.login-guru');
     }
 
+    // ─── Tampilkan form login superadmin ────────────────────────
+    public function showLoginSuperAdmin()
+    {
+        return view('autentication.login-superadmin');
+    }
+
     // ─── Proses login siswa (pakai NIS) ──────────────────────────
     public function loginSiswa(Request $request)
     {
@@ -39,7 +38,6 @@ class AuthController extends Controller
             'password.required' => 'Kata sandi wajib diisi.',
         ]);
 
-        // PENTING: cari berdasarkan kolom 'nis' bukan 'email'
         $user = User::where('nis', $request->nis)
                     ->where('role', 'siswa')
                     ->first();
@@ -68,7 +66,6 @@ class AuthController extends Controller
             'password.required' => 'Kata sandi wajib diisi.',
         ]);
 
-        // PENTING: cari berdasarkan kolom 'nip' bukan 'email'
         $user = User::where('nip', $request->nip)
                     ->where('role', 'guru')
                     ->first();
@@ -83,6 +80,34 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         return redirect()->route('guru.dashboard')
+                         ->with('success', 'Selamat datang, ' . $user->name . '!');
+    }
+
+    // ─── Proses login superadmin (pakai NIP = admin001) ──────────
+    public function loginSuperAdmin(Request $request)
+    {
+        $request->validate([
+            'nip'      => 'required|string',
+            'password' => 'required|string',
+        ], [
+            'nip.required'      => 'NIP Admin wajib diisi.',
+            'password.required' => 'Kata sandi wajib diisi.',
+        ]);
+
+        $user = User::where('nip', $request->nip)
+                    ->where('role', 'superadmin')
+                    ->first();
+
+        if (! $user || ! Hash::check($request->password, $user->password)) {
+            return back()
+                ->withInput($request->only('nip'))
+                ->withErrors(['nip' => 'ID Admin atau kata sandi salah.']);
+        }
+
+        Auth::login($user, $request->boolean('remember'));
+        $request->session()->regenerate();
+
+        return redirect()->route('superadmin.dashboard')
                          ->with('success', 'Selamat datang, ' . $user->name . '!');
     }
 

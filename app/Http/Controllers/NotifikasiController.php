@@ -8,36 +8,81 @@ use Illuminate\Support\Facades\Auth;
 
 class NotifikasiController extends Controller
 {
-    // ─── [SISWA] Daftar notifikasi siswa ────────────────────────
+    // ─── [SISWA] Halaman notifikasi siswa ───────────────────────
     public function index()
     {
-        $notifikasi = Notifikasi::where('user_id', Auth::id())
-            ->latest()
-            ->paginate(15);
+        $user = Auth::user();
 
-        return view('siswa.notifikasi-siswa', compact('notifikasi'));
+        $notifikasi = Notifikasi::where('user_id', $user->id)
+            ->latest()
+            ->paginate(20);
+
+        $totalBelumDibaca = Notifikasi::where('user_id', $user->id)
+            ->where('dibaca', false)
+            ->count();
+
+        return view('siswa.notifikasi-siswa', compact('notifikasi', 'totalBelumDibaca'));
     }
 
-    // ─── [SISWA] Tandai satu notifikasi sebagai sudah dibaca ─────
-    public function markAsRead(Request $request, Notifikasi $notifikasi)
+    // ─── [GURU] Halaman notifikasi guru ─────────────────────────
+    public function indexGuru()
     {
-        // Verifikasi bahwa notifikasi ini milik user yang login
-        if ($notifikasi->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized');
-        }
+        $user = Auth::user();
+
+        $notifikasi = Notifikasi::where('user_id', $user->id)
+            ->with('tugas')
+            ->latest()
+            ->paginate(20);
+
+        $totalBelumDibaca   = Notifikasi::where('user_id', $user->id)->where('dibaca', false)->count();
+        $totalPengumpulan   = Notifikasi::where('user_id', $user->id)->whereIn('tipe', ['pengumpulan_siswa', 'pengumpulan_update'])->count();
+        $totalNotif         = Notifikasi::where('user_id', $user->id)->count();
+
+        return view('guru.notifikasi', compact(
+            'notifikasi',
+            'totalBelumDibaca',
+            'totalPengumpulan',
+            'totalNotif'
+        ));
+    }
+
+    // ─── Tandai satu notif sebagai dibaca (SISWA & GURU) ────────
+    public function markAsRead(Request $request, $id)
+    {
+        $notifikasi = Notifikasi::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
 
         $notifikasi->update(['dibaca' => true]);
 
-        return back()->with('success', 'Notifikasi sudah ditandai sebagai dibaca.');
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return back();
     }
 
-    // ─── [SISWA] Tandai semua notifikasi sebagai sudah dibaca ────
+    // ─── Tandai semua notif sebagai dibaca (SISWA & GURU) ───────
     public function markAllAsRead(Request $request)
     {
         Notifikasi::where('user_id', Auth::id())
             ->where('dibaca', false)
             ->update(['dibaca' => true]);
 
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return back()->with('success', 'Semua notifikasi sudah ditandai sebagai dibaca.');
+    }
+
+    // ─── Hapus satu notifikasi ───────────────────────────────────
+    public function destroy($id)
+    {
+        Notifikasi::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->delete();
+
+        return back()->with('success', 'Notifikasi dihapus.');
     }
 }
